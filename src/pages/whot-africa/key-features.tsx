@@ -27,7 +27,7 @@ export default function KeyFeatures() {
     ];
     return (
         <>
-            <div className="mt-10 w-full px-8">
+            <section id="features" className="mt-10 w-full px-8">
                 <div className="text-center">
                     <h2 className="text-3xl text-white font-bold">
                         Key <span className="text-[#FFB800]">Features</span>
@@ -51,7 +51,7 @@ export default function KeyFeatures() {
                         </div>
                     ))}
                 </div>
-            </div>
+            </section>
         </>
     );
 }

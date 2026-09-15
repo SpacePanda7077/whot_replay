@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { SignUp } from "../../api/auth-api";
 import { toast, Toaster } from "sonner";
 import CountryList from "../../components/info/country-list";
+import { motion } from "motion/react";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function Register() {
             if (data.error) {
                 toast.error(data.error);
             } else {
-                toast.success("Sign up successfull");
+                toast.success("Sign up successfull, Login to your account");
             }
         }
         if (error) {
@@ -141,14 +142,15 @@ export default function Register() {
                             />
                         </div>
 
-                        <button
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
                             onClick={(e) => {
                                 handle_signup(e);
                             }}
                             className="bg-[#FFB800] text-[#2E071B] rounded-lg p-2 font-bold text-lg mt-4"
                         >
                             Signup
-                        </button>
+                        </motion.button>
                     </div>
                     <div className="mt-5">
                         already have an account ?{" "}

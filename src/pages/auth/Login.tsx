@@ -4,6 +4,7 @@ import { LogIn } from "../../api/auth-api";
 import { Toaster, toast } from "sonner";
 import { useAuth } from "../../store/auth-store";
 import { useNavigate } from "react-router";
+import { motion } from "motion/react";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -90,14 +91,15 @@ export default function Login() {
                             />
                         </div>
 
-                        <button
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
                             onClick={(e) => {
                                 handle_login(e);
                             }}
                             className="bg-[#FFB800] text-[#2E071B] rounded-lg p-2 font-bold text-lg mt-4"
                         >
                             Login
-                        </button>
+                        </motion.button>
                     </div>
                     <div className="mt-5">
                         dont have an account ?{" "}

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../store/auth-store";
 import SideBar from "./sideBar";
 import { useState } from "react";
+import { motion } from "motion/react";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -67,18 +68,20 @@ export default function Header() {
                 )}
                 {!log && (
                     <div className="hidden lg:flex items-center gap-5">
-                        <button
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => navigate("/login")}
                             className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
                         >
                             Login
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => navigate("/register")}
                             className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
                         >
                             Sign Up
-                        </button>
+                        </motion.button>
                     </div>
                 )}
 

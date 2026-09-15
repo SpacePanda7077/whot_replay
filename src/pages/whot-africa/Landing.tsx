@@ -2,6 +2,25 @@ import { IoLogoGooglePlaystore, IoPhonePortraitOutline } from "react-icons/io5";
 import { PiAppStoreLogoBold } from "react-icons/pi";
 
 export default function Landing() {
+    const redirectToPlayStore = () => {
+        // Replace 'com.example.yourpackagename' with your actual app package ID
+        const appId = "com.whotafrica";
+
+        window.location.href = `https://play.google.com/store/apps/details?id=com.whotafrica&pcampaignid=web_share`;
+    };
+    const redirectToAppStore = () => {
+        // Replace 'com.example.yourpackagename' with your actual app package ID
+        const appId = "com.whotafrica";
+
+        window.location.href = `https://apps.apple.com/us/app/whot-africa/id1491486672`;
+    };
+
+    const scrollToSection = (id: string) => {
+        document.getElementById(id)?.scrollIntoView({
+            behavior: "smooth",
+        });
+    };
+
     return (
         <>
             <div className="relative flex gap-10 w-full py-4">
@@ -24,11 +43,17 @@ export default function Landing() {
                             <IoPhonePortraitOutline size={24} /> Start Earning
                             Now
                         </button>
-                        <button className="border border-white/20 bg-white/5 p-4 rounded-lg text-white font-bold">
+                        <button
+                            onClick={() => scrollToSection("features")}
+                            className="border border-white/20 bg-white/5 p-4 rounded-lg text-white font-bold"
+                        >
                             Explore Features
                         </button>
                     </div>
-                    <div className="flex items-center gap-5 text-white z-100">
+                    <div
+                        onClick={redirectToAppStore}
+                        className="flex items-center gap-5 text-white z-100"
+                    >
                         <button className="flex flex-col p-2 rounded-lg font-bold border border-[#FFB800]/70 px-5 bg-white/3 cursor-pointer">
                             <div className="text-xs">Download on</div>
                             <div className="text-white flex gap-2 items-center">
@@ -36,7 +61,10 @@ export default function Landing() {
                                 App Store
                             </div>
                         </button>
-                        <button className="flex flex-col p-2 rounded-lg font-bold border border-[#FFB800]/70 px-5 bg-white/3 cursor-pointer">
+                        <button
+                            onClick={redirectToPlayStore}
+                            className="flex flex-col p-2 rounded-lg font-bold border border-[#FFB800]/70 px-5 bg-white/3 cursor-pointer"
+                        >
                             <div className="text-xs">Get It On</div>
                             <div className="text-white flex gap-2 items-center">
                                 <IoLogoGooglePlaystore />
