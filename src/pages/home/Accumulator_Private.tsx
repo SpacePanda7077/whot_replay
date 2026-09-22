@@ -1,6 +1,6 @@
 import Accumulated_Match_Info from "./Accumulated_Match_Info";
 import { useEffect, useState } from "react";
-import { useAccumulatedOddStore } from "../../store/accumulator.store";
+import { useAccumulatedOddStore } from "../../store/history";
 import { useReplayStore } from "../../store/replay.store";
 import { EventBus } from "../../game/EventBus";
 
@@ -9,13 +9,8 @@ export default function Accumulator_Private() {
     const [amount, setAmount] = useState<number>(200);
     const handle_select = (value: number) => [setAmount(value)];
     const accumulated_odds = useAccumulatedOddStore((s) => s.accumulated_odds);
-    const upcoming_replays = useReplayStore((s) => s.upcoming_replay);
+    const replays = useReplayStore((s) => s.replays);
     const total_odd = useAccumulatedOddStore((s) => s.total_odds);
-    const getOddForMatchId = (id: string, team: string) => {
-        const exist = upcoming_replays.find((up) => up.id === id);
-        if (!exist) return 0;
-        return exist.teams.find((t) => t.team === team)?.odds;
-    };
 
     useEffect(() => {
         EventBus.emit("amount_changed", amount);
@@ -32,9 +27,7 @@ export default function Accumulator_Private() {
                                     key={odd.id}
                                     id={odd.id}
                                     team={odd.team}
-                                    odd={
-                                        getOddForMatchId(odd.id, odd.team) || 0
-                                    }
+                                    odd={0}
                                 />
                             ))}
                         </div>

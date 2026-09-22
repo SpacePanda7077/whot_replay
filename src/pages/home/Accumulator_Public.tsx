@@ -1,41 +1,27 @@
 import { ImStack } from "react-icons/im";
 import { IoIosArrowDown } from "react-icons/io";
-import { useAccumulatedOddStore } from "../../store/accumulator.store";
+import { useAccumulatedOddStore } from "../../store/history";
 import { useEffect, useState } from "react";
 import { EventBus } from "../../game/EventBus";
 interface Prop {
-    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    bet_amount: number;
 }
-export default function Accumulator_Public({ setIsOpen }: Prop) {
-    const total_odds = useAccumulatedOddStore((s) => s.total_odds);
-    const [amount, setAmount] = useState<number>(200);
-    const accumulated_odds = useAccumulatedOddStore((s) => s.accumulated_odds);
-    useEffect(() => {
-        EventBus.on("amount_changed", (data: number) => {
-            setAmount(data);
-        });
+export default function Accumulator_Public({ bet_amount }: Prop) {
+    const total_bets = useAccumulatedOddStore((s) => s.total_bets);
 
-        return () => {
-            EventBus.removeAllListeners("amount_changed");
-        };
-    }, []);
     return (
         <>
-            <div
-                onClick={() => setIsOpen((prev) => !prev)}
-                className="flex justify-between items-center"
-            >
+            <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-[#ffa400]/20 border border-[#ffa400]/50 rounded-lg">
                         <ImStack size={24} color="#ffa400" />
                     </div>
                     <div className="text-sm ">
                         <h2 className="text-white font-bold">
-                            {accumulated_odds.length} Leg Accumulator Slip
+                            {total_bets} Leg Accumulator Slip
                         </h2>
                         <p className="text-xs">
-                            Pari-Mutual pool {accumulated_odds.length} Match
-                            Selected
+                            Pari-Mutual pool {total_bets} Match Selected
                         </p>
                     </div>
                 </div>
@@ -43,13 +29,13 @@ export default function Accumulator_Public({ setIsOpen }: Prop) {
                     <div className="flex flex-col gap-1 items-end">
                         <div className=" text-white/80 flex items-center gap-2">
                             <p className="text-xs">
-                                {accumulated_odds.length === 0
+                                {total_bets === 0
                                     ? "None"
-                                    : accumulated_odds.length === 1
+                                    : total_bets === 1
                                       ? "Single"
                                       : "Accumulated"}
                             </p>
-                            <p className="text-xs">{total_odds}x</p>
+                            <p className="text-xs">{total_bets}x</p>
                         </div>
 
                         <h2 className="flex items-center gap-2">
@@ -59,13 +45,13 @@ export default function Accumulator_Public({ setIsOpen }: Prop) {
                                     stake amount :{" "}
                                     <span className="font-bold">
                                         {" "}
-                                        ₦{amount}
+                                        ₦{bet_amount}
                                     </span>
                                 </p>
                                 <p>
                                     potential earnings :{" "}
                                     <span className="text-[#ffa400] font-bold ">
-                                        ₦{amount * total_odds}
+                                        ₦{total_bets}
                                     </span>
                                 </p>
                             </div>

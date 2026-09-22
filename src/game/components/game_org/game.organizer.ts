@@ -1,8 +1,10 @@
 // GameOrganizer.ts
 import { Scene, Math as PhaserMath } from "phaser";
-import { Card_Info, IGameReplay } from "../../repaly.data";
+
 import { Card } from "../Card";
 import { Player } from "../Player";
+import { Card_Info, suit_shapes } from "../../repaly.data";
+import { Players } from "../../../store/replay.store";
 export type placement = {
     x: number;
     y: number;
@@ -10,43 +12,53 @@ export type placement = {
     play_rot: number;
 };
 export class GameOrganizer {
-    gamedata: IGameReplay;
+    initial_deck: Card[] = [];
     scene: Scene;
-    placements: placement[];
+    placements: { x: number; y: number; rot: number; play_rot: number }[];
+    market_offset: number;
     players: Player[] = [];
-    market_offset = 0;
+    turn_circle: Phaser.GameObjects.Arc;
 
-    constructor(scene: Scene, gamedata: IGameReplay) {
+    constructor(scene: Scene) {
         this.scene = scene;
         const width = scene.scale.width;
         const height = scene.scale.height;
-        this.gamedata = gamedata;
 
         this.placements = [
             { x: width / 2 + 100, y: height - 100, rot: 0, play_rot: 60 }, // 2: bottom
             { x: width / 2 - 100, y: 100, rot: 0, play_rot: 40 }, // 1: top
         ];
 
-        this.initialze_game();
+        this.turn_circle = this.scene.add
+            .circle(-1000, -1000, 65, 0xff0000, 0.5)
+            .setStrokeStyle(5, 0xff0000);
+        scene.tweens.add({
+            targets: this.turn_circle,
+            scale: 1.1,
+            yoyo: true,
+            repeat: -1,
+            duration: 1000,
+        });
     }
 
-    initialze_game() {
-        const player_init_decks = this.gamedata.initial_hands;
-        const market_decks = this.gamedata.initial_deck;
-
-        player_init_decks.forEach((decks, playerIndex) => {
+    initialze_game(
+        initial_deck: Card_Info[],
+        players: Players,
+        initail_hands: Card_Info[][],
+    ) {
+        players.forEach((decks, playerIndex) => {
             const placemant = this.placements[playerIndex];
             const player = new Player(
                 this.scene,
                 this,
                 playerIndex,
-                decks,
+                initail_hands[decks.player_index],
                 placemant,
             );
             this.players[playerIndex] = player;
         });
 
-        this.arrange_market(market_decks);
+        this.arrange_market(initial_deck);
     }
 
     arrange_market(market_decks: Card_Info[]) {
@@ -54,9 +66,9 @@ export class GameOrganizer {
         const height = this.scene.scale.height;
 
         for (const deck of market_decks) {
-            new Card(
+            const c = new Card(
                 this.scene,
-                deck.shape,
+                suit_shapes[deck.suit],
                 deck.number,
                 width / 2 - 300,
                 height / 2,
@@ -66,6 +78,7 @@ export class GameOrganizer {
                 null,
                 this,
             );
+            this.initial_deck.push(c);
             this.market_offset += 1;
         }
     }

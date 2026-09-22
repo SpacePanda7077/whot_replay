@@ -1,7 +1,7 @@
 import { Scene, Math as PhaserMath } from "phaser";
 import { Card } from "./Card";
 import { GameOrganizer, placement } from "./game_org/game.organizer";
-import { Card_Info } from "../repaly.data";
+import { Card_Info, suit_shapes } from "../repaly.data";
 import { CardCounterAndAvatar } from "./Card_Counter_anD_Avatar";
 
 export class Player {
@@ -57,7 +57,7 @@ export class Player {
 
         const card = new Card(
             this.scene,
-            card_info.shape,
+            suit_shapes[card_info.suit],
             card_info.number,
             x,
             y,

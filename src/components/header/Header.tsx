@@ -8,11 +8,14 @@ import { useAuth } from "../../store/auth-store";
 import SideBar from "./sideBar";
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useWalletStore } from "../../store/wallet-store";
 
 export default function Header() {
     const navigate = useNavigate();
     const [sidebarOpen, setSideBarOpen] = useState(false);
     const log = useAuth((s) => s.login_result);
+    const wallet = useWalletStore((s) => s.wallet);
+
     return (
         <>
             <div className="fixed left-0 top-0 w-full flex justify-between items-center py-4 px-4 border-b border-b-[#ffa500]/90 bg-white/5 backdrop-blur-lg text-white z-1000">
@@ -56,7 +59,7 @@ export default function Header() {
                     <div className="hidden lg:flex items-center gap-5">
                         <div className="flex gap-2 items-center bg-white/10 py-1 px-2 border font-bold border-white/20 rounded-lg">
                             <CiWallet size={24} color="#FFB800" />
-                            {Number(25400).toLocaleString()}
+                            {wallet?.balance.toLocaleString() || 0}
                         </div>
                         <button
                             onClick={() => navigate("/wallet")}

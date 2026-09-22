@@ -85,19 +85,9 @@ export class Card {
             this.card_number_right,
             this.card_number_left,
         ]);
-        this.card_base.setInteractive().on("pointerdown", () => {
-            if (this.owner) {
-                this.reveal(z_index, this.pos_id);
-                z_index++;
-                return;
-            }
-            {
-                this.take_market(z_index, 0);
-            }
-        });
     }
 
-    reveal(z: number, pos_id: number) {
+    reveal(z: number, pos_id: number, shape: string, number: number) {
         const width = this.scene.scale.width;
         const height = this.scene.scale.height;
         const posX = PhaserMath.Between(width / 2 - 20, width / 2 + 20);
@@ -118,9 +108,14 @@ export class Card {
                     onStart: () => {
                         this.card_base.clearTint();
                         this.card_shape.setVisible(true);
-                        this.card_number_right.setVisible(true);
-                        this.card_number_left.setVisible(true);
+                        this.card_number_right
+                            .setVisible(true)
+                            .setText(number.toString());
+                        this.card_number_left
+                            .setVisible(true)
+                            .setText(number.toString());
                         this.card_logo.setVisible(false);
+                        this.card_shape.setTexture(shape);
                     },
                 },
                 {

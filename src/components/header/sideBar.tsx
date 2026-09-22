@@ -5,9 +5,11 @@ import { RiChatHistoryFill } from "react-icons/ri";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../store/auth-store";
+import { useWalletStore } from "../../store/wallet-store";
 
 export default function SideBar() {
     const navigate = useNavigate();
+    const wallet = useWalletStore((s) => s.wallet);
 
     const log = useAuth((s) => s.login_result);
     return (
@@ -39,7 +41,7 @@ export default function SideBar() {
                     <div className="flex lg:hidden items-center gap-5">
                         <div className="flex gap-2 items-center bg-white/10 py-1 px-2 border font-bold border-white/20 rounded-lg">
                             <CiWallet size={24} color="#FFB800" />
-                            {Number(25400).toLocaleString()}
+                            {wallet?.balance.toLocaleString() || 0}
                         </div>
                         <button
                             onClick={() => navigate("/wallet")}
