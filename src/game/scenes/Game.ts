@@ -8,6 +8,7 @@ import { Card_Info, suit_shapes } from "../repaly.data";
 export class Game extends Scene {
     blind_cover: Phaser.GameObjects.Rectangle;
     organizer: GameOrganizer;
+    loading_text: Phaser.GameObjects.Text;
     constructor() {
         super("Game");
     }
@@ -26,8 +27,25 @@ export class Game extends Scene {
         const height = this.scale.height;
 
         this.blind_cover = this.add
-            .rectangle(width * 0.5, height * 0.5, 100000, 100000, 0xff0000)
+            .rectangle(width * 0.5, height * 0.5, 100000, 100000, 0x2c071a)
             .setDepth(100000000);
+        this.loading_text = this.add
+            .text(width * 0.5, height * 0.5, "Please wait Loading Game ...", {
+                fontStyle: "bold",
+                fontSize: "32px",
+                color: "white",
+                stroke: "black",
+                strokeThickness: 15,
+            })
+            .setDepth(100000010)
+            .setOrigin(0.5);
+        this.tweens.add({
+            targets: this.loading_text,
+            alpha: 0.3,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+        });
 
         this.add
             .image(width / 2, height / 2, "background")
@@ -77,6 +95,7 @@ export class Game extends Scene {
                 players: Players;
             }) => {
                 this.blind_cover.setVisible(false);
+                this.loading_text.setVisible(false);
                 console.log("Game start");
                 this.organizer.initialze_game(
                     data.initial_deck,

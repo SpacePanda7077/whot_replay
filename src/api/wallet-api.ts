@@ -50,13 +50,34 @@ export const SetWallet = async (
         account_number: string;
     },
 ) => {
-    const res = await axios.put(`${ENDPOINT}/api/wallet/withdrawal-account`, {
+    console.log(token);
+
+    const res = await axios.put(
+        `${ENDPOINT}/api/wallet/withdrawal-account`,
         data,
-        headers: {
-            Authorization: `Bearer ${token}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
         },
-    });
+    );
 
     return res;
 };
 
+export const DepositStatus = async (token: string, reference: string) => {
+    const res = await axios.post(
+        `${ENDPOINT}/api/wallet/deposit/status`,
+        {
+            reference,
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    );
+
+    return res.data;
+};

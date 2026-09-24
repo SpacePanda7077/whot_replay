@@ -8,9 +8,10 @@ import { useWalletStore } from "../../store/wallet-store";
 
 interface Prop {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    refetch: () => void;
 }
 
-export default function WithdrawalModal({ setOpen }: Prop) {
+export default function WithdrawalModal({ setOpen, refetch }: Prop) {
     const [accountName, setAccountName] = useState<string>();
     const [accountNumber, setAccountNumber] = useState<string>();
     const [amount, setAmount] = useState<number>();
@@ -58,7 +59,7 @@ export default function WithdrawalModal({ setOpen }: Prop) {
     });
 
     const { mutate: set_account } = useMutation({
-        mutationKey: ["deposit_funds"],
+        mutationKey: ["set_account"],
         mutationFn: (data: {
             token: string;
             data: {
@@ -73,6 +74,7 @@ export default function WithdrawalModal({ setOpen }: Prop) {
                 setMsg("ACCOUNT SET SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
+                refetch();
             }
             console.log(data);
         },

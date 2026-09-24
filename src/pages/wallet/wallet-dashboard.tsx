@@ -1,8 +1,10 @@
 import { CiWallet } from "react-icons/ci";
 import DepositDashboard from "./deposit-dashboard";
 import { useWalletStore } from "../../store/wallet-store";
-
-export default function WalletDashboard() {
+interface Prop {
+    refetch: () => void;
+}
+export default function WalletDashboard({ refetch }: Prop) {
     const wallet = useWalletStore((s) => s.wallet);
     return (
         <>
@@ -31,7 +33,7 @@ export default function WalletDashboard() {
                     </p>
                 </div>
 
-                <DepositDashboard />
+                <DepositDashboard refetch={refetch} />
             </div>
         </>
     );

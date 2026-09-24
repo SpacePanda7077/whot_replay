@@ -8,6 +8,7 @@ type SignUpResponseType = {
 
 type LoginResponseType = {
     ret: string;
+    email: string;
     token: string;
     msg: string;
 };

@@ -4,6 +4,8 @@ import { useAuth } from "../../store/auth-store";
 import { useMutation } from "@tanstack/react-query";
 import { Deposit } from "../../api/wallet-api";
 import PopUpModal from "../../components/popup-modal";
+import { useFetchTxStatus } from "../../hooks/useFetchsTxStatus";
+import LoadingState from "../../components/Loader";
 
 interface Prop {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -19,10 +21,17 @@ export default function DepositModal({ setOpen }: Prop) {
     );
 
     const logs = useAuth((s) => s.login_result);
-    const [show, setShow] = useState(false);
-    const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
-    const [msg, setMsg] = useState<string>("ERROR");
 
+    const {
+        depositReference,
+        setDepositReference,
+        msg,
+        show,
+        status,
+        setShow,
+        setMsg,
+        setStatus,
+    } = useFetchTxStatus();
     const { mutate } = useMutation({
         mutationKey: ["deposit_funds"],
         mutationFn: (data: {
@@ -32,9 +41,12 @@ export default function DepositModal({ setOpen }: Prop) {
         onSuccess: (data) => {
             // If your API function returns the response object containing status
             if (data?.status === 200 || data?.status === 201) {
-                setMsg("DEPOSIT SUCCESSFULLY");
-                setStatus("SUCCESS");
-                setShow(true);
+                console.log(data.data);
+                const { url, reference } = data.data;
+
+                setDepositReference(reference);
+
+                handlePayment(url);
             }
             console.log(data);
         },
@@ -58,7 +70,6 @@ export default function DepositModal({ setOpen }: Prop) {
             setShow(true);
         },
     });
-
     // 💡 You can now delete the entire useEffect hook!
 
     const handleDeposit = useCallback(() => {
@@ -68,6 +79,23 @@ export default function DepositModal({ setOpen }: Prop) {
             data: { amount: amount, provider: "opay" },
         });
     }, [logs, amount]);
+
+    const handlePayment = async (url: string) => {
+        // 1. Open a blank window IMMEDIATELY on click to bypass pop-up blockers
+        const paymentWindow = window.open("about:blank", "_blank");
+
+        try {
+            const paymentUrl = url;
+
+            // 2. Inject the real URL once the API responds
+            if (paymentUrl && paymentWindow) {
+                paymentWindow.location.href = paymentUrl;
+            }
+        } catch (error) {
+            // 3. Close it if the API fails
+            if (paymentWindow) paymentWindow.close();
+        }
+    };
     return (
         <>
             <div className="z-50 mt-10 fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center  backdrop-blur-lg">
@@ -80,7 +108,9 @@ export default function DepositModal({ setOpen }: Prop) {
                             <label>Email</label>
                             <input
                                 type="text"
-                                // value={email}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder={logs?.email || "enter Email"}
                                 className="bg-white/5 w-full p-2 rounded text-white font-bold placeholder:text-white/40"
                             />
                         </div>
@@ -137,6 +167,7 @@ export default function DepositModal({ setOpen }: Prop) {
                 </div>
             </div>
             {show && <PopUpModal text={msg} type={status} setShow={setShow} />}
+            {depositReference && <LoadingState />}
         </>
     );
 }

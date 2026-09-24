@@ -11,7 +11,11 @@ import { useWalletStore } from "../../store/wallet-store";
 export default function Wallet() {
     const logs = useAuth((s) => s.login_result);
     const setwallet = useWalletStore((s) => s.setWallet);
-    const { data: walletdata, error: walletError } = useQuery({
+    const {
+        data: walletdata,
+        error: walletError,
+        refetch,
+    } = useQuery({
         queryKey: ["get_wallet_info"],
         queryFn: () => GetWallet(logs!.token),
         enabled: logs !== null,
@@ -30,7 +34,7 @@ export default function Wallet() {
         <>
             <Header />
             <div className="flex flex-col gap-4 items-center justify-center mt-30 text-white/70 ">
-                <WalletDashboard />
+                <WalletDashboard refetch={refetch} />
 
                 <TransactionHistory />
             </div>

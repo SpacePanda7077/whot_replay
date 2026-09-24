@@ -33,10 +33,10 @@ authentication.
 
 ```json
 {
-  "full_name": "Ada Player",
-  "email": "ada@example.com",
-  "password": "secure-password",
-  "country": "Nigeria"
+    "full_name": "Ada Player",
+    "email": "ada@example.com",
+    "password": "secure-password",
+    "country": "Nigeria"
 }
 ```
 
@@ -46,8 +46,8 @@ All fields are required.
 
 ```json
 {
-  "user_id": "66b123456789012345678901",
-  "unique_id": "a1b2c3"
+    "user_id": "66b123456789012345678901",
+    "unique_id": "a1b2c3"
 }
 ```
 
@@ -55,15 +55,15 @@ All fields are required.
 
 ```json
 {
-  "error": "email already taken"
+    "error": "email already taken"
 }
 ```
 
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid request or missing field |
-| `409` | Email already exists |
-| `500` | Account creation failure |
+| Status | Meaning                          |
+| ------ | -------------------------------- |
+| `400`  | Invalid request or missing field |
+| `409`  | Email already exists             |
+| `500`  | Account creation failure         |
 
 ### POST `/api/auth/login`
 
@@ -73,8 +73,8 @@ Authenticates an existing SimplyWhot-compatible user.
 
 ```json
 {
-  "email": "ada@example.com",
-  "password": "secure-password"
+    "email": "ada@example.com",
+    "password": "secure-password"
 }
 ```
 
@@ -82,9 +82,9 @@ Authenticates an existing SimplyWhot-compatible user.
 
 ```json
 {
-  "ret": 0,
-  "token": "jwt-token",
-  "msg": "Signed in successfully!"
+    "ret": 0,
+    "token": "jwt-token",
+    "msg": "Signed in successfully!"
 }
 ```
 
@@ -94,8 +94,8 @@ The JWT expires after 30 minutes.
 
 ```json
 {
-  "ret": 1,
-  "msg": "Email or Password is incorrect."
+    "ret": 1,
+    "msg": "Email or Password is incorrect."
 }
 ```
 
@@ -113,20 +113,32 @@ their schedule.
 
 ```json
 {
-  "replays": [
-    {
-      "id": "room-number",
-      "status": "open",
-      "bets_open_at": "2026-09-10T09:57:00Z",
-      "bets_lock_at": "2026-09-10T09:59:00Z",
-      "stream_start_at": "2026-09-10T10:00:00Z",
-      "stream_end_at": "2026-09-10T10:07:00Z",
-      "players": [
-        { "player_index": 0, "userid": "u1", "full_name": "Ada", "avatar": "default", "team": "orange" },
-        { "player_index": 1, "userid": "u2", "full_name": "Bola", "avatar": "default", "team": "blue" }
-      ]
-    }
-  ]
+    "replays": [
+        {
+            "id": "room-number",
+            "status": "open",
+            "bets_open_at": "2026-09-10T09:57:00Z",
+            "bets_lock_at": "2026-09-10T09:59:00Z",
+            "stream_start_at": "2026-09-10T10:00:00Z",
+            "stream_end_at": "2026-09-10T10:07:00Z",
+            "players": [
+                {
+                    "player_index": 0,
+                    "userid": "u1",
+                    "full_name": "Ada",
+                    "avatar": "default",
+                    "team": "orange"
+                },
+                {
+                    "player_index": 1,
+                    "userid": "u2",
+                    "full_name": "Bola",
+                    "avatar": "default",
+                    "team": "blue"
+                }
+            ]
+        }
+    ]
 }
 ```
 
@@ -151,13 +163,13 @@ the standard `Last-Event-ID` header or a `?from=<seq>` query parameter.
 
 Event types:
 
-| `event:` | When | Data |
-| --- | --- | --- |
-| `scheduled` | Before the stream starts (betting or the lock→stream gap) | `{ "game_id", "status", "bets_open_at", "bets_lock_at", "stream_start_at", "events_total" }` |
-| `start` | Once locked and the stream start is reached | `{ "game_id", "players", "initial_hands", "initial_last_card", "initial_deck", "turn_array", "events_total", "stream_start_at", "stream_end_at" }` |
-| `frame` | One per recorded event, with `id:` set to the event `seq` | The replay event |
-| `end` | After the last frame | `{ "game_id", "winner_player_index", "winner_team", "final_hands" }` |
-| `error` | On failure | `{ "error" }` |
+| `event:`    | When                                                      | Data                                                                                                                                               |
+| ----------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scheduled` | Before the stream starts (betting or the lock→stream gap) | `{ "game_id", "status", "bets_open_at", "bets_lock_at", "stream_start_at", "events_total" }`                                                       |
+| `start`     | Once locked and the stream start is reached               | `{ "game_id", "players", "initial_hands", "initial_last_card", "initial_deck", "turn_array", "events_total", "stream_start_at", "stream_end_at" }` |
+| `frame`     | One per recorded event, with `id:` set to the event `seq` | The replay event                                                                                                                                   |
+| `end`       | After the last frame                                      | `{ "game_id", "winner_player_index", "winner_team", "final_hands" }`                                                                               |
+| `error`     | On failure                                                | `{ "error" }`                                                                                                                                      |
 
 While waiting for the broadcast to start, the server sends periodic `: waiting`
 comments to keep the connection alive.
@@ -190,25 +202,25 @@ Each `frame` carries one recorded game event:
 
 `type` is one of:
 
-| `type` | payload |
-| --- | --- |
-| `DEAL` | `{ player_cards_list, last_card, deck, turn_array }` |
-| `NEXT_TURN` | `{ player_index, turn_index, special_card, last_card, deck_card_count }` |
-| `PLAY_CARD` | `{ player_index, card, previous_last_card, new_last_card, remaining_cards }` |
-| `PICK_CARD` | `{ player_index, cards, deck_card_count, player_cards, special_card }` |
-| `SELECT_SUIT` | `{ player_index, suit, previous_last_card, new_last_card }` |
+| `type`        | payload                                                                      |
+| ------------- | ---------------------------------------------------------------------------- |
+| `DEAL`        | `{ player_cards_list, last_card, deck, turn_array }`                         |
+| `NEXT_TURN`   | `{ player_index, turn_index, special_card, last_card, deck_card_count }`     |
+| `PLAY_CARD`   | `{ player_index, card, previous_last_card, new_last_card, remaining_cards }` |
+| `PICK_CARD`   | `{ player_index, cards, deck_card_count, player_cards, special_card }`       |
+| `SELECT_SUIT` | `{ player_index, suit, previous_last_card, new_last_card }`                  |
 
 Cards are `{ "suit": <int>, "number": <int> }`. `number` is the face value
 (1–14, or 20 for Whot). `suit` is an index:
 
-| `suit` | shape |
-| --- | --- |
-| 0 | Circles |
-| 1 | Triangles |
-| 2 | Crosses |
-| 3 | Squares |
-| 4 | Stars |
-| 5 | Whot (wild) |
+| `suit` | shape       |
+| ------ | ----------- |
+| 0      | Circles     |
+| 1      | Triangles   |
+| 2      | Crosses     |
+| 3      | Squares     |
+| 4      | Stars       |
+| 5      | Whot (wild) |
 
 `SELECT_SUIT` carries the `suit` a player chose after playing a Whot (20).
 
@@ -233,25 +245,37 @@ Lists the betting markets, including pools and participation. Requires
 
 ```json
 {
-  "games": [
-    {
-      "id": "room-number",
-      "status": "open",
-      "market_state": "gathering",
-      "bets_open_at": "2026-09-10T09:57:00Z",
-      "bets_lock_at": "2026-09-10T09:59:00Z",
-      "stream_start_at": "2026-09-10T10:00:00Z",
-      "stream_end_at": "2026-09-10T10:07:00Z",
-      "orange_pool": 0,
-      "blue_pool": 0,
-      "orange_stakers": 0,
-      "blue_stakers": 0,
-      "players": [
-        { "player_index": 0, "userid": "u1", "full_name": "Ada", "avatar": "default", "team": "orange" },
-        { "player_index": 1, "userid": "u2", "full_name": "Bola", "avatar": "default", "team": "blue" }
-      ]
-    }
-  ]
+    "games": [
+        {
+            "id": "room-number",
+            "status": "open",
+            "market_state": "gathering",
+            "bets_open_at": "2026-09-10T09:57:00Z",
+            "bets_lock_at": "2026-09-10T09:59:00Z",
+            "stream_start_at": "2026-09-10T10:00:00Z",
+            "stream_end_at": "2026-09-10T10:07:00Z",
+            "orange_pool": 0,
+            "blue_pool": 0,
+            "orange_stakers": 0,
+            "blue_stakers": 0,
+            "players": [
+                {
+                    "player_index": 0,
+                    "userid": "u1",
+                    "full_name": "Ada",
+                    "avatar": "default",
+                    "team": "orange"
+                },
+                {
+                    "player_index": 1,
+                    "userid": "u2",
+                    "full_name": "Bola",
+                    "avatar": "default",
+                    "team": "blue"
+                }
+            ]
+        }
+    ]
 }
 ```
 
@@ -304,10 +328,10 @@ Places a bet against the shared coin balance.
 
 ```json
 {
-  "game_id": "room-number",
-  "team": "orange",
-  "amount": 500,
-  "slip_code": "A1B2C3D4E5"
+    "game_id": "room-number",
+    "team": "orange",
+    "amount": 500,
+    "slip_code": "A1B2C3D4E5"
 }
 ```
 
@@ -319,23 +343,23 @@ bet to the same shareable slip.
 
 ```json
 {
-  "id": "66b123456789012345678901",
-  "game_id": "room-number",
-  "team": "orange",
-  "amount": 500,
-  "status": "placed",
-  "payout": 0,
-  "slip_code": "A1B2C3D4E5",
-  "createdtime": "2026-09-10T12:00:00Z"
+    "id": "66b123456789012345678901",
+    "game_id": "room-number",
+    "team": "orange",
+    "amount": 500,
+    "status": "placed",
+    "payout": 0,
+    "slip_code": "A1B2C3D4E5",
+    "createdtime": "2026-09-10T12:00:00Z"
 }
 ```
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid team, invalid amount, or insufficient coin balance |
-| `409` | Betting is not open, or the side has reached the pool cap |
+| Status | Meaning                                                    |
+| ------ | ---------------------------------------------------------- |
+| `400`  | Invalid team, invalid amount, or insufficient coin balance |
+| `409`  | Betting is not open, or the side has reached the pool cap  |
 
 ### GET `/api/bets`
 
@@ -348,7 +372,7 @@ refunds the stake).
 
 ```json
 {
-  "bets": []
+    "bets": []
 }
 ```
 
@@ -362,24 +386,41 @@ game.
 
 ```json
 {
-  "code": "A1B2C3D4E5",
-  "total_stake": 1500,
-  "createdtime": "2026-09-10T12:00:00Z",
-  "bets": [
-    {
-      "game_id": "room-number",
-      "team": "orange",
-      "amount": 500,
-      "status": "placed",
-      "players": [
-        { "player_index": 0, "userid": "u1", "full_name": "Ada", "avatar": "default", "team": "orange" },
-        { "player_index": 1, "userid": "u2", "full_name": "Bola", "avatar": "default", "team": "blue" }
-      ]
-    }
-  ],
-  "accumulator_bets": [
-    { "accumulator_id": "66b123456789012345678903", "combo": "OB", "amount": 500, "status": "placed" }
-  ]
+    "code": "A1B2C3D4E5",
+    "total_stake": 1500,
+    "createdtime": "2026-09-10T12:00:00Z",
+    "bets": [
+        {
+            "game_id": "room-number",
+            "team": "orange",
+            "amount": 500,
+            "status": "placed",
+            "players": [
+                {
+                    "player_index": 0,
+                    "userid": "u1",
+                    "full_name": "Ada",
+                    "avatar": "default",
+                    "team": "orange"
+                },
+                {
+                    "player_index": 1,
+                    "userid": "u2",
+                    "full_name": "Bola",
+                    "avatar": "default",
+                    "team": "blue"
+                }
+            ]
+        }
+    ],
+    "accumulator_bets": [
+        {
+            "accumulator_id": "66b123456789012345678903",
+            "combo": "OB",
+            "amount": 500,
+            "status": "placed"
+        }
+    ]
 }
 ```
 
@@ -388,9 +429,9 @@ game.
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `404` | No slip with that code |
+| Status | Meaning                |
+| ------ | ---------------------- |
+| `404`  | No slip with that code |
 
 ## Accumulators
 
@@ -446,10 +487,10 @@ Lists open and live accumulators with their combination pools.
 
 ```json
 {
-  "accumulator_id": "66b123456789012345678901",
-  "combo": "OB",
-  "amount": 500,
-  "slip_code": "A1B2C3D4E5"
+    "accumulator_id": "66b123456789012345678901",
+    "combo": "OB",
+    "amount": 500,
+    "slip_code": "A1B2C3D4E5"
 }
 ```
 
@@ -459,24 +500,24 @@ Lists open and live accumulators with their combination pools.
 
 ```json
 {
-  "id": "66b123456789012345678902",
-  "accumulator_id": "66b123456789012345678901",
-  "combo": "OB",
-  "amount": 500,
-  "status": "placed",
-  "payout": 0,
-  "slip_code": "A1B2C3D4E5",
-  "createdtime": "2026-09-10T12:00:00Z"
+    "id": "66b123456789012345678902",
+    "accumulator_id": "66b123456789012345678901",
+    "combo": "OB",
+    "amount": 500,
+    "status": "placed",
+    "payout": 0,
+    "slip_code": "A1B2C3D4E5",
+    "createdtime": "2026-09-10T12:00:00Z"
 }
 ```
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid combination, invalid amount, or insufficient coin |
-| `404` | Accumulator not found |
-| `409` | Betting is not open, or the combination has reached the pool cap |
+| Status | Meaning                                                          |
+| ------ | ---------------------------------------------------------------- |
+| `400`  | Invalid combination, invalid amount, or insufficient coin        |
+| `404`  | Accumulator not found                                            |
+| `409`  | Betting is not open, or the combination has reached the pool cap |
 
 ### GET `/api/accumulators/bets`
 
@@ -484,11 +525,11 @@ Returns the authenticated user's accumulator bets, newest first.
 
 ### Admin endpoints
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/admin/accumulators` | Create an accumulator from `{ "game_ids": [...] }` |
-| `POST` | `/api/admin/accumulators/{id}/lock` | Close betting |
-| `POST` | `/api/admin/accumulators/{id}/settle` | Settle and pay out (all legs must be settled) |
+| Method | Path                                  | Purpose                                            |
+| ------ | ------------------------------------- | -------------------------------------------------- |
+| `POST` | `/api/admin/accumulators`             | Create an accumulator from `{ "game_ids": [...] }` |
+| `POST` | `/api/admin/accumulators/{id}/lock`   | Close betting                                      |
+| `POST` | `/api/admin/accumulators/{id}/settle` | Settle and pay out (all legs must be settled)      |
 
 Accumulators are locked automatically when any leg starts and settled
 automatically once every leg has settled.
@@ -511,12 +552,12 @@ Authorization: Bearer <jwt-token>
 
 ```json
 {
-  "balance": 0,
-  "withdrawal_account": {
-    "account_name": "",
-    "bank_name": "",
-    "account_number": ""
-  }
+    "balance": 0,
+    "withdrawal_account": {
+        "account_name": "",
+        "bank_name": "",
+        "account_number": ""
+    }
 }
 ```
 
@@ -531,8 +572,8 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "amount": 5000,
-  "provider": "opay"
+    "amount": 5000,
+    "provider": "opay"
 }
 ```
 
@@ -543,8 +584,8 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "url": "https://checkout.opayweb.com/...",
-  "reference": "66b123456789012345678901"
+    "url": "https://checkout.opayweb.com/...",
+    "reference": "66b123456789012345678901"
 }
 ```
 
@@ -552,11 +593,11 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid amount |
-| `502` | Whot Africa could not start the deposit |
-| `503` | Deposits are not configured |
+| Status | Meaning                                 |
+| ------ | --------------------------------------- |
+| `400`  | Invalid amount                          |
+| `502`  | Whot Africa could not start the deposit |
+| `503`  | Deposits are not configured             |
 
 ### POST `/api/wallet/deposit/status`
 
@@ -566,7 +607,7 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "reference": "66b123456789012345678901"
+    "reference": "66b123456789012345678901"
 }
 ```
 
@@ -574,7 +615,7 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "status": "pending"
+    "status": "pending"
 }
 ```
 
@@ -582,9 +623,9 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `404` | No such deposit for this user |
+| Status | Meaning                       |
+| ------ | ----------------------------- |
+| `404`  | No such deposit for this user |
 
 ### POST `/api/wallet/withdraw`
 
@@ -597,7 +638,7 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "amount": 5000
+    "amount": 5000
 }
 ```
 
@@ -605,17 +646,17 @@ Requires `Authorization: Bearer <jwt-token>`.
 
 ```json
 {
-  "msg": "withdrawal requested"
+    "msg": "withdrawal requested"
 }
 ```
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `400` | Invalid amount |
-| `502` | Whot Africa rejected the withdrawal (insufficient coin, missing bank details, limits) |
-| `503` | Withdrawals are not configured |
+| Status | Meaning                                                                               |
+| ------ | ------------------------------------------------------------------------------------- |
+| `400`  | Invalid amount                                                                        |
+| `502`  | Whot Africa rejected the withdrawal (insufficient coin, missing bank details, limits) |
+| `503`  | Withdrawals are not configured                                                        |
 
 ### PUT `/api/wallet/withdrawal-account`
 
@@ -626,9 +667,9 @@ document, this also updates the account in Whot Africa.
 
 ```json
 {
-  "account_name": "Ada Player",
-  "bank_name": "Example Bank",
-  "account_number": "0123456789"
+    "account_name": "Ada Player",
+    "bank_name": "Example Bank",
+    "account_number": "0123456789"
 }
 ```
 
@@ -636,16 +677,16 @@ document, this also updates the account in Whot Africa.
 
 ```json
 {
-  "msg": "withdrawal account updated"
+    "msg": "withdrawal account updated"
 }
 ```
 
 #### Errors
 
-| Status | Meaning |
-| --- | --- |
-| `400` | A required field is missing |
-| `500` | Update failed |
+| Status | Meaning                     |
+| ------ | --------------------------- |
+| `400`  | A required field is missing |
+| `500`  | Update failed               |
 
 ### GET `/api/wallet/transactions`
 
@@ -656,16 +697,23 @@ Returns the authenticated user's deposit and withdrawal history, newest first
 
 ```json
 {
-  "transactions": [
-    {
-      "type": "deposit",
-      "amount": 5000,
-      "status": "success",
-      "createdtime": "2026-09-10T12:00:00Z"
-    }
-  ]
+    "transactions": [
+        {
+            "type": "deposit",
+            "amount": 5000,
+            "status": "success",
+            "createdtime": "2026-09-10T12:00:00Z"
+        }
+    ]
 }
 ```
 
 `type` is `deposit` or `withdrawal`. `status` is `pending`, `success`, `failed`,
 or `reverted`.
+
+curl -i -X POST "https://whotreplay.92.205.183.108.sslip.io/api/wallet/withdraw" \
+ -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNwYWNlcGFuZGE3MDc3QGdtYWlsLmNvbSIsImV4cCI6MTc5MDI1MTUyMSwiaWQiOiI2YWE0MDkzMjlkMmZkOTQ2YzIxMWNiNzUiLCJuYW1lIjoibWFydmlzIG9saSIsInJvbGUiOiJVc2VyIn0.VfRTfTzvncSIDc_v7566QdTNQ_Rh-guZXU5XZp2gEMk" -H "Content-Type: application/json" \
+ -d '{"amount":200}'
+
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNwYWNlcGFuZGE3MDc3QGdtYWlsLmNvbSIsImV4cCI6MTc5MDI1MTUyMSwiaWQiOiI2YWE0MDkzMjlkMmZkOTQ2YzIxMWNiNzUiLCJuYW1lIjoibWFydmlzIG9saSIsInJvbGUiOiJVc2VyIn0.VfRTfTzvncSIDc_v7566QdTNQ_Rh-guZXU5XZp2gEMk"
+

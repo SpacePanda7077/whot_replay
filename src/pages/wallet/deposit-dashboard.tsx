@@ -2,7 +2,11 @@ import { useState } from "react";
 import DepositModal from "./deposit-modal";
 import WithdrawalModal from "./withdrawal-modal";
 
-export default function DepositDashboard() {
+interface Prop {
+    refetch: () => void;
+}
+
+export default function DepositDashboard({ refetch }: Prop) {
     const [depositOpen, setDepositOpen] = useState(false);
     const [withdrawalOpen, setWithdrawalOpen] = useState(false);
     return (
@@ -25,7 +29,12 @@ export default function DepositDashboard() {
             </div>
 
             {depositOpen && <DepositModal setOpen={setDepositOpen} />}
-            {withdrawalOpen && <WithdrawalModal setOpen={setWithdrawalOpen} />}
+            {withdrawalOpen && (
+                <WithdrawalModal
+                    refetch={refetch}
+                    setOpen={setWithdrawalOpen}
+                />
+            )}
         </>
     );
 }
