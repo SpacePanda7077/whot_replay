@@ -4,13 +4,14 @@ interface Prop {
 
 export default function PaymentMethodList({ setSelected }: Prop) {
     const BankList = [
-        "Pay With Transfer",
-        "PayStack",
-        "PalmPay",
-        "Whot Pay",
-        "Credo",
-        "USDT TRC20",
-        "USDT ERC20",
+        `opay`,
+        `paystack`,
+        `marasoftpay`,
+        `payaza`,
+        `nomba`,
+        `credo`,
+        `crypto`,
+        `palmpay`,
     ];
     return (
         <>

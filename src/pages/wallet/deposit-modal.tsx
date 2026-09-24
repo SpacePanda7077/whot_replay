@@ -73,12 +73,12 @@ export default function DepositModal({ setOpen }: Prop) {
     // 💡 You can now delete the entire useEffect hook!
 
     const handleDeposit = useCallback(() => {
-        if (!logs || !amount || amount <= 0) return;
+        if (!logs || !amount || amount <= 0 || !selectedMethod) return;
         mutate({
             token: logs.token,
-            data: { amount: amount, provider: "opay" },
+            data: { amount: amount, provider: selectedMethod },
         });
-    }, [logs, amount]);
+    }, [logs, amount, selectedMethod]);
 
     const handlePayment = async (url: string) => {
         // 1. Open a blank window IMMEDIATELY on click to bypass pop-up blockers
