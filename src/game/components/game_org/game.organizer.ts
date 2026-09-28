@@ -54,6 +54,7 @@ export class GameOrganizer {
                 playerIndex,
                 initail_hands[decks.player_index],
                 placemant,
+                decks.full_name,
             );
             this.players[playerIndex] = player;
         });

@@ -41,7 +41,7 @@ export default function Matches() {
                 )} */}
 
                 {logs ? (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 ">
                         {upcoming_replays && upcoming_replays.length > 0 ? (
                             <div>
                                 <div className="flex gap-2 items-center">
@@ -59,7 +59,7 @@ export default function Matches() {
                                     </h1>
                                 </div>
                                 {matchType === "SINGLE" && (
-                                    <div className=" relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
+                                    <div className="shadow-lg shadow-black relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
                                         {upcoming_replays
                                             .filter(
                                                 (r) => r.status !== "locked",
@@ -86,7 +86,7 @@ export default function Matches() {
                                 )}
 
                                 {matchType === "MULTI" && (
-                                    <div className=" relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] md:min-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
+                                    <div className="shadow-lg shadow-black relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] md:min-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
                                         {duumy_accumulator.map((m) => (
                                             <UpcomingAccumulator
                                                 key={m.id}
@@ -104,7 +104,7 @@ export default function Matches() {
                                 )}
                             </div>
                         ) : (
-                            <div className=" text-center text-white text-lg font-bold w-full">
+                            <div className="shadow-lg shadow-black text-center text-white text-lg font-bold w-full">
                                 No Games Available !!!
                             </div>
                         )}

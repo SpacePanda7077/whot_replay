@@ -8,20 +8,24 @@ export type bet = {
     payout: number;
     slip_code: string;
     status: string;
+    f_status: "placed" | "in match" | "settled";
     team: string;
 };
 
 type bet_history = {
     total_staked: number;
     net_profiit: number;
+    refetch: number;
     bets: bet[];
     setBets: (bets: bet[]) => void;
     setStats: (stats: { total_staked: number; net_profiit: number }) => void;
+    setRefetch: (refetch: number) => void;
 };
 
 export const useHistoryStore = create<bet_history>((set, get) => ({
     total_staked: 0,
     net_profiit: 0,
+    refetch: 0,
     bets: [],
     setBets: (bets) => {
         const { totalStaked, netProfitLoss } = calculateBetStats(bets);
@@ -37,9 +41,10 @@ export const useHistoryStore = create<bet_history>((set, get) => ({
             net_profiit: stats.net_profiit,
         });
     },
+    setRefetch: (refetch) => set({ refetch }),
 }));
 
-function calculateBetStats(bets: bet[]) {
+export function calculateBetStats(bets: bet[]) {
     return bets.reduce(
         (acc, currentBet) => {
             // 1. Accumulate total staked money

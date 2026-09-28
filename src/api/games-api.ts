@@ -1,6 +1,8 @@
 import axios from "axios";
 import { ENDPOINT } from "./glogal-api";
 import { EventBus } from "../game/EventBus";
+import { useReplayStore } from "../store/replay.store";
+import { useHistoryStore } from "../store/history";
 
 export const GetReplays = async () => {
     const res = await axios.get(`${ENDPOINT}/api/replays`);
@@ -35,6 +37,7 @@ export const streamGame = (id: string) => {
     es.addEventListener("start", (e) => {
         const data = JSON.parse(e.data);
         console.log(data);
+
         EventBus.emit("game_start", data);
         // initialize board state
     });
@@ -47,6 +50,10 @@ export const streamGame = (id: string) => {
 
     es.addEventListener("end", (e) => {
         console.log(JSON.parse(e.data));
+        const refetch = useHistoryStore.getState().refetch;
+        const setRefetch = useHistoryStore.getState().setRefetch;
+        let newrefetch = refetch + 1;
+        setRefetch(newrefetch);
         es.close();
     });
 

@@ -1,10 +1,15 @@
+import { use } from "matter";
 import { bet } from "../../store/history";
+import { useReplayStore } from "../../store/replay.store";
+import { useEffect } from "react";
 
 interface Prop {
     bet: bet;
 }
 
 export default function StakeComponent({ bet }: Prop) {
+    const games = useReplayStore((s) => s.replays);
+    useEffect(() => {}, [games]);
     return (
         <>
             <div className="flex flex-col gap-2 bg-[#2E041D] p-4 rounded-lg border border-[#FFB800]/20">

@@ -46,7 +46,7 @@ export class Card {
         this.card = this.scene.add.container(x, y).setAngle(this.rot);
         this.card_base = this.scene.add
             .sprite(0, 0, "card-base")
-            .setTint(0x340720);
+            .setTint(0x681f3d);
         this.card_logo = this.scene.add
             .sprite(0, 0, "logo")
             .setDisplaySize(64, 64)
@@ -65,7 +65,7 @@ export class Card {
             })
             .setVisible(false)
             .setOrigin(0.5)
-            .setTint(0x340720);
+            .setTint(0x681f3d);
         this.card_number_left = this.scene.add
             .text(-35, 65, this.number.toString(), {
                 fontSize: "24px", // Adjust size as needed
@@ -74,9 +74,9 @@ export class Card {
             })
             .setVisible(false)
             .setOrigin(0.5)
-            .setTint(0x340720);
+            .setTint(0x681f3d);
 
-        this.shape !== "whot" ? this.card_shape.setTint(0x340720) : "";
+        this.shape !== "whot" ? this.card_shape.setTint(0x873b61) : "";
 
         this.card.add([
             this.card_base,

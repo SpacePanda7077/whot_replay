@@ -17,6 +17,7 @@ export class Player {
         player_index: number,
         cards: Card_Info[],
         placement: placement,
+        name: string,
     ) {
         this.scene = scene;
         this.game_organizer = game_organizer;
@@ -28,6 +29,7 @@ export class Player {
             placement.x,
             placement.y,
             cards.length,
+            name,
         );
     }
     initialize(card_info: Card_Info[]) {

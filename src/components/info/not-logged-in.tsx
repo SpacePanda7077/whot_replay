@@ -4,7 +4,7 @@ export default function NotLoggedIn() {
     const navigate = useNavigate();
     return (
         <>
-            <div className="absolute bg-black/40 rounded-lg backdrop-blur-lg w-full h-full flex flex-col gap-4 justify-center font-bold text-white text-2xl items-center">
+            <div className="absolute bg-black/40 rounded-lg backdrop-blur-lg w-full h-full flex flex-col gap-4 justify-center font-bold text-white text-2xl Z-1000000 items-center">
                 LOG IN TO PLAY
                 <button
                     onClick={() => navigate("/login")}

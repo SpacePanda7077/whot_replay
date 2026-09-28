@@ -1,7 +1,12 @@
 @import "tailwindcss";
-body,
+
 html {
-    background: radial-gradient(circle, #47082f 0%, #2b0719 100%);
+    /* background: radial-gradient(circle, #47082f 0%, #2b0719 100%); */
+    background-image: url("/assets/bg-img.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 /* globals.css */

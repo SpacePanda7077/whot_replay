@@ -34,7 +34,7 @@ export default function UpcomingMatch({
 }: Prop) {
     return (
         <>
-            <div className="p-4 border border-[#ffa500]/20 rounded-lg  shadow-lg">
+            <div className="p-4 border border-[#ffa500]/20 rounded-lg  shadow-md shadow-black">
                 <UpcomingMatchTopInfo
                     id={id}
                     status={status}
@@ -43,6 +43,7 @@ export default function UpcomingMatch({
                 />
                 <Choices
                     id={id}
+                    status={status}
                     teams={teams}
                     choosenBet={choosenBet}
                     setChoosenBet={setChoosenBet}

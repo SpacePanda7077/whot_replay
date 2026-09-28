@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useReplayStore } from "../store/replay.store";
-import { GetAccumulatorReplays, GetReplays } from "../api/games-api";
+import { GetAccumulatorReplays, GetGames, GetReplays } from "../api/games-api";
 import { useEffect } from "react";
 import { useAuth } from "../store/auth-store";
+import { replace } from "react-router";
 
 export const useFetchGames = () => {
     const user = useAuth((s) => s.login_result);
@@ -21,7 +22,7 @@ export const useFetchGames = () => {
         refetch,
     } = useQuery({
         queryKey: ["get_replays"],
-        queryFn: () => GetReplays(),
+        queryFn: () => GetGames(user!.token),
     });
 
     useEffect(() => {
@@ -37,14 +38,15 @@ export const useFetchGames = () => {
     useEffect(() => {
         if (Replays) {
             console.log(Replays);
-            setReplays(Replays.replays);
-            const liveReplay = Replays.replays.find(
-                (replay: { status: string }) => replay.status === "locked",
+            setReplays(Replays.games);
+            const lockedgames = Replays.games.filter(
+                (r: { status: string }) => r.status === "locked",
             );
-            if (liveReplay) {
-                setLiveReplay(liveReplay);
-                console.log("Live Replay", liveReplay);
-            }
+            console.log("Locked games : ", lockedgames);
+            const liveReplays = lockedgames.splice(0, 3);
+            console.log(liveReplays);
+
+            setLiveReplay(liveReplays);
         }
         if (GetReplaysError) {
             console.log(GetReplaysError);

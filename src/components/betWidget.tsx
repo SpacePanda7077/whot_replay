@@ -3,6 +3,8 @@ import { Place_Bet } from "../api/bet-api";
 import { useAuth } from "../store/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import PopUpModal from "./popup-modal";
+import { useFetchBets } from "../hooks/useFetchBets";
+import { useHistoryStore } from "../store/history";
 
 interface Prop {
     choosenBet: {
@@ -20,9 +22,11 @@ export default function BetWidget({
 }: Prop) {
     const suggested_amount = [200, 500, 1000, 5000, 10000];
     const logs = useAuth((s) => s.login_result);
+    const refetch = useHistoryStore((s) => s.refetch);
     const [show, setShow] = useState(false);
     const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
     const [msg, setMsg] = useState<string>("ERROR");
+    const { getBetHistory } = useFetchBets();
     const { mutate } = useMutation({
         mutationKey: ["place_bet_single"],
         mutationFn: (token: string) =>
@@ -37,6 +41,7 @@ export default function BetWidget({
                 setMsg("BET PLACED SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
+                getBetHistory();
             }
             console.log(data);
         },
@@ -58,7 +63,9 @@ export default function BetWidget({
             setShow(true);
         },
     });
-
+    useEffect(() => {
+        getBetHistory();
+    }, [refetch]);
     // 💡 You can now delete the entire useEffect hook!
 
     const handleBet = useCallback(() => {

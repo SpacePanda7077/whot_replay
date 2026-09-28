@@ -22,14 +22,15 @@ export default function UpcomingMatchTopInfo({
             const { minutes: openMin, seconds: openSec } = getTimeRemaining(
                 time.open_at,
             );
-            if (openMin === 0 && openSec === 0) {
-                refetch();
-            }
+
             const { minutes: closeMin, seconds: closeSec } = getTimeRemaining(
-                time.open_at,
+                time.close_at,
             );
             setOpenTime({ min: openMin, sec: openSec });
             setCloseTime({ min: closeMin, sec: closeSec });
+            if (openMin === 0 && openSec === 0) {
+                refetch();
+            }
         }, 1000);
 
         return () => {
@@ -40,21 +41,35 @@ export default function UpcomingMatchTopInfo({
         <>
             <div>
                 <div className="flex items-center justify-between">
-                    <div className="text-[10px] flex items-center gap-4">
-                        <div className="flex gap-2 items-center text-white/60 bg-white/10 w-fit py-1 px-2 rounded-lg">
+                    <div className="text-[10px] flex items-center gap-2">
+                        <div
+                            style={{
+                                backgroundColor:
+                                    status === "scheduled" ? "orange" : "green",
+                                color:
+                                    status === "scheduled"
+                                        ? "#2E071B"
+                                        : "white",
+                            }}
+                            className="flex gap-2 items-center  w-fit py-1 px-2 rounded-lg font-bold"
+                        >
                             <p>{status}</p>
                         </div>
                         <p className="text-white/70 ">#{id}</p>
                     </div>
                     <div className="text-[10px]">
                         {status === "scheduled"
-                            ? "Betting starts in : "
-                            : "Betting closes : "}
+                            ? "Bet starts in : "
+                            : status === "open"
+                              ? "Bet locks at :"
+                              : " bet opened "}
 
-                        <div>
+                        <div className="text-white font-bold">
                             {status === "scheduled"
                                 ? `${openTime.min}: ${openTime.sec}`
-                                : `${closeTime.min}: ${closeTime.sec}`}
+                                : status === "open"
+                                  ? `${closeTime.min}: ${closeTime.sec}`
+                                  : ""}
                         </div>
                     </div>
                 </div>
@@ -62,9 +77,8 @@ export default function UpcomingMatchTopInfo({
         </>
     );
 }
-const betsOpenAt = "2026-09-10T09:57:00Z";
 
-function getTimeRemaining(date: string) {
+export function getTimeRemaining(date: string) {
     const remainingMs = Math.max(0, new Date(date).getTime() - Date.now());
 
     const totalSeconds = Math.floor(remainingMs / 1000);
@@ -74,6 +88,4 @@ function getTimeRemaining(date: string) {
         seconds: totalSeconds % 60,
     };
 }
-
-console.log(getTimeRemaining(betsOpenAt));
 

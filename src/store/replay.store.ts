@@ -39,17 +39,21 @@ type accumulator = {
     createdtime: string;
 };
 type replays = {
-    live_replay: replay | null;
+    watchIndex: number;
+    live_replay: replay[];
     replays: replay[];
-    setLiveReplay: (replay: replay) => void;
+    setLiveReplay: (replay: replay[]) => void;
     setReplays: (replays: replay[]) => void;
+    setWatchIndex: (index: number) => void;
 };
 
 export const useReplayStore = create<replays>((set) => ({
-    live_replay: null,
+    watchIndex: 0,
+    live_replay: [],
     replays: [],
     setLiveReplay: (replay) => set({ live_replay: replay }),
     setReplays: (replays) => set({ replays }),
+    setWatchIndex: (index) => set({ watchIndex: index }),
 }));
 
 export const dummy_replay: replay[] = [
@@ -64,14 +68,14 @@ export const dummy_replay: replay[] = [
             {
                 player_index: 0,
                 userid: "u1",
-                full_name: "Ada",
+                full_name: "",
                 avatar: "default",
                 team: "orange",
             },
             {
                 player_index: 1,
                 userid: "u2",
-                full_name: "Bola",
+                full_name: "",
                 avatar: "default",
                 team: "blue",
             },
@@ -88,14 +92,14 @@ export const dummy_replay: replay[] = [
             {
                 player_index: 0,
                 userid: "u1",
-                full_name: "Ada",
+                full_name: "",
                 avatar: "default",
                 team: "orange",
             },
             {
                 player_index: 1,
                 userid: "u2",
-                full_name: "Bola",
+                full_name: "",
                 avatar: "default",
                 team: "blue",
             },
@@ -112,14 +116,14 @@ export const dummy_replay: replay[] = [
             {
                 player_index: 0,
                 userid: "u1",
-                full_name: "Ada",
+                full_name: "",
                 avatar: "default",
                 team: "orange",
             },
             {
                 player_index: 1,
                 userid: "u2",
-                full_name: "Bola",
+                full_name: "",
                 avatar: "default",
                 team: "blue",
             },
@@ -138,14 +142,14 @@ export const duumy_accumulator: accumulator[] = [
                     {
                         player_index: 0,
                         userid: "u1",
-                        full_name: "Ada",
+                        full_name: "",
                         avatar: "default",
                         team: "orange",
                     },
                     {
                         player_index: 1,
                         userid: "u2",
-                        full_name: "Bola",
+                        full_name: "",
                         avatar: "default",
                         team: "blue",
                     },
@@ -157,14 +161,14 @@ export const duumy_accumulator: accumulator[] = [
                     {
                         player_index: 0,
                         userid: "u1",
-                        full_name: "Ada",
+                        full_name: "",
                         avatar: "default",
                         team: "orange",
                     },
                     {
                         player_index: 1,
                         userid: "u2",
-                        full_name: "Bola",
+                        full_name: "",
                         avatar: "default",
                         team: "blue",
                     },
@@ -188,14 +192,14 @@ export const duumy_accumulator: accumulator[] = [
                     {
                         player_index: 0,
                         userid: "u1",
-                        full_name: "Ada",
+                        full_name: "",
                         avatar: "default",
                         team: "orange",
                     },
                     {
                         player_index: 1,
                         userid: "u2",
-                        full_name: "Bola",
+                        full_name: "",
                         avatar: "default",
                         team: "blue",
                     },
@@ -207,14 +211,14 @@ export const duumy_accumulator: accumulator[] = [
                     {
                         player_index: 0,
                         userid: "u1",
-                        full_name: "Ada",
+                        full_name: "",
                         avatar: "default",
                         team: "orange",
                     },
                     {
                         player_index: 1,
                         userid: "u2",
-                        full_name: "Bola",
+                        full_name: "",
                         avatar: "default",
                         team: "blue",
                     },
