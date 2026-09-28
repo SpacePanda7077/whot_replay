@@ -63,6 +63,7 @@ export default function Register() {
                 toast.error(data.error);
             } else {
                 toast.success("Sign up successful, Login to your account");
+                navigate("/login");
             }
         }
 
