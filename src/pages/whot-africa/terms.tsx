@@ -5,7 +5,7 @@ export default function Terms() {
         <>
             <div className="text-white  flex justify-center">
                 <Header />
-                <div className=" w-1/2 flex flex-col gap-5 items-center justify-center mt-30 p-10 rounded-lg bg-[#2b061c]">
+                <div className=" w-[98%] md:w-[70%] lg:w-[50%] flex flex-col gap-5 items-center justify-center mt-30 p-10 rounded-lg bg-[#2b061c]">
                     <div className="flex flex-col gap-3">
                         <h1 className="font-bold text-4xl">
                             {" "}
