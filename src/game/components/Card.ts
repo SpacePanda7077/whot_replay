@@ -1,7 +1,6 @@
 import { Scene, Math as PhaserMath } from "phaser";
 import { GameOrganizer } from "./game_org/game.organizer";
 import { Player } from "./Player";
-let z_index = 1;
 
 const special_cards = [1, 2, 8, 14];
 
@@ -20,6 +19,11 @@ export class Card {
     play_rot: number;
     owner: Player | null;
     game_organizer: GameOrganizer;
+
+    // Track running tweens so a new animation can cancel the old one.
+    move_tween?: Phaser.Tweens.Tween;
+    reveal_chain?: Phaser.Tweens.TweenChain;
+
     constructor(
         scene: Scene,
         shape: string,
@@ -42,6 +46,7 @@ export class Card {
         this.owner = owner;
         this.game_organizer = game_organizer;
     }
+
     create_card(x: number, y: number) {
         this.card = this.scene.add.container(x, y).setAngle(this.rot);
         this.card_base = this.scene.add
@@ -59,24 +64,24 @@ export class Card {
 
         this.card_number_right = this.scene.add
             .text(35, -65, this.number.toString(), {
-                fontSize: "24px", // Adjust size as needed
-                fontStyle: "bold", // Makes the text bold
-                fontFamily: "Arial", // Optional: specify font family
+                fontSize: "24px",
+                fontStyle: "bold",
+                fontFamily: "Arial",
             })
             .setVisible(false)
             .setOrigin(0.5)
             .setTint(0x681f3d);
         this.card_number_left = this.scene.add
             .text(-35, 65, this.number.toString(), {
-                fontSize: "24px", // Adjust size as needed
-                fontStyle: "bold", // Makes the text bold
-                fontFamily: "Arial", // Optional: specify font family
+                fontSize: "24px",
+                fontStyle: "bold",
+                fontFamily: "Arial",
             })
             .setVisible(false)
             .setOrigin(0.5)
             .setTint(0x681f3d);
 
-        this.shape !== "whot" ? this.card_shape.setTint(0x873b61) : "";
+        if (this.shape !== "whot") this.card_shape.setTint(0x873b61);
 
         this.card.add([
             this.card_base,
@@ -87,14 +92,47 @@ export class Card {
         ]);
     }
 
+    private stop_tweens() {
+        this.move_tween?.stop();
+        this.move_tween = undefined;
+        this.reveal_chain?.stop();
+        this.reveal_chain = undefined;
+    }
+
+    private show_face(shape: string, number: number) {
+        this.card_base.clearTint();
+        this.card_shape.setVisible(true);
+        this.card_number_right.setVisible(true).setText(number.toString());
+        this.card_number_left.setVisible(true).setText(number.toString());
+        this.card_logo.setVisible(false);
+        this.card_shape.setTexture(shape);
+    }
+
+    private finish_reveal(pos_id: number) {
+        this.drop(pos_id);
+        this.owner?.avatar.update_cards_left(this.owner.cards.length);
+    }
+
     reveal(z: number, pos_id: number, shape: string, number: number) {
+        // Cancel any in-flight move so it can't override this card's position.
+        this.stop_tweens();
+
         const width = this.scene.scale.width;
         const height = this.scene.scale.height;
         const posX = PhaserMath.Between(width / 2 - 20, width / 2 + 20);
         const posY = PhaserMath.Between(height / 2 - 20, height / 2 + 20);
         const isSpecialCard = special_cards.includes(this.number);
 
-        this.scene.tweens.chain({
+        // Catch-up mode: jump straight to the final state, no animation.
+        if (this.game_organizer.instant) {
+            this.card.setDepth(z);
+            this.show_face(shape, number);
+            this.card.setPosition(posX, posY).setScale(1);
+            this.finish_reveal(pos_id);
+            return;
+        }
+
+        this.reveal_chain = this.scene.tweens.chain({
             targets: this.card,
             onStart: () => {
                 this.card.setDepth(z);
@@ -106,58 +144,59 @@ export class Card {
                     duration: isSpecialCard ? 400 : 250,
                     ease: "Expo.easeOut",
                     onStart: () => {
-                        this.card_base.clearTint();
-                        this.card_shape.setVisible(true);
-                        this.card_number_right
-                            .setVisible(true)
-                            .setText(number.toString());
-                        this.card_number_left
-                            .setVisible(true)
-                            .setText(number.toString());
-                        this.card_logo.setVisible(false);
-                        this.card_shape.setTexture(shape);
+                        this.show_face(shape, number);
                     },
                 },
                 {
                     scaleX: 1,
                     scaleY: 1,
-
                     y: posY,
                     x: posX,
                     duration: 100,
                     ease: "Back.easeOut",
                     onComplete: () => {
-                        this.drop(pos_id);
-                        this.owner?.avatar.update_cards_left(
-                            this.owner.cards.length,
-                        );
+                        this.finish_reveal(pos_id);
                     },
                 },
             ],
         });
     }
 
-    // Card.ts — only the relevant parts changed
     take_market(z: number, playerIndex: number) {
         this.game_organizer.players[playerIndex].add_card_to_hand(
             playerIndex,
             this,
         );
+        if (!this.game_organizer.instant) {
+            this.scene.sound.play("card_play");
+        }
     }
 
     move_to(x: number, y: number, rot: number, playerIndex: number) {
-        this.scene.tweens.add({
+        this.stop_tweens();
+
+        // Set the owner immediately, not in onComplete, so a PLAY_CARD that
+        // follows right away sees the correct owner.
+        this.owner = this.game_organizer.players[playerIndex];
+
+        if (this.game_organizer.instant) {
+            this.card.setPosition(x, y).setAngle(rot);
+            return;
+        }
+
+        this.move_tween = this.scene.tweens.add({
             targets: this.card,
             x,
             y,
             angle: rot,
-            duration: 200,
+            duration: 400,
             ease: "Back.easeOut",
             onComplete: () => {
-                this.owner = this.game_organizer.players[playerIndex];
+                this.move_tween = undefined;
             },
         });
     }
+
     make_mine() {
         this.pos_id = 2;
     }
@@ -176,4 +215,3 @@ export class Card {
         return baseAngle + offset;
     }
 }
-

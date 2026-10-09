@@ -1,29 +1,15 @@
 import axios from "axios";
 import { ENDPOINT } from "./glogal-api";
 import { EventBus } from "../game/EventBus";
-import { useReplayStore } from "../store/replay.store";
 import { useHistoryStore } from "../store/history";
 
-export const GetReplays = async () => {
-    const res = await axios.get(`${ENDPOINT}/api/replays`);
+export const GetAccumulatorReplays = async () => {
+    const res = await axios.get(`${ENDPOINT}/api/accumulators`);
     return res.data;
 };
 
-export const GetAccumulatorReplays = async (token: string) => {
-    const res = await axios.get(`${ENDPOINT}/api/accumulators`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const GetGames = async (token: string) => {
-    const res = await axios.get(`${ENDPOINT}/api/games`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const GetGames = async () => {
+    const res = await axios.get(`${ENDPOINT}/api/games`);
     return res.data;
 };
 
@@ -31,34 +17,43 @@ export const GetGames = async (token: string) => {
 //======================GET STREAMING GAMES================================//
 //=========================================================================//
 
+// Opens the replay stream for one game and forwards its events to the
+// Phaser scene through EventBus. Returns a cleanup function.
+//
+// IMPORTANT: call this from a useEffect and return the cleanup function.
+// Do NOT call it from react-query's queryFn: react-query would store the
+// cleanup function as "data" and never call it, so the old stream would
+// keep feeding frames to whichever scene is active.
 export const streamGame = (id: string) => {
-    const es = new EventSource(`${ENDPOINT}/api/replays/${id}/stream`);
+    const es = new EventSource(`${ENDPOINT}/api/games/${id}/stream`);
 
     es.addEventListener("start", (e) => {
-        const data = JSON.parse(e.data);
-        console.log(data);
-
-        EventBus.emit("game_start", data);
-        // initialize board state
+        EventBus.emit("game_start", JSON.parse((e as MessageEvent).data));
     });
 
     es.addEventListener("frame", (e) => {
-        const frame = JSON.parse(e.data);
-        console.log(frame);
-        EventBus.emit("frame", frame);
+        EventBus.emit("frame", JSON.parse((e as MessageEvent).data));
     });
 
     es.addEventListener("end", (e) => {
-        console.log(JSON.parse(e.data));
-        const refetch = useHistoryStore.getState().refetch;
-        const setRefetch = useHistoryStore.getState().setRefetch;
-        let newrefetch = refetch + 1;
-        setRefetch(newrefetch);
+        // { game_id, winner_player_index, winner_team, final_hands }
+        // useLiveSlots listens for this to replace the finished game.
+        EventBus.emit("game_end", JSON.parse((e as MessageEvent).data));
+
+        const { refetch, setRefetch } = useHistoryStore.getState();
+        setRefetch(refetch + 1);
         es.close();
     });
 
-    es.onerror = () => es.close();
+    es.onerror = () => {
+        // On a network blip EventSource reconnects by itself and resumes
+        // with Last-Event-ID (the server supports it), so don't close here.
+        // If the browser already gave up (e.g. HTTP error), it is CLOSED.
+        if (es.readyState === EventSource.CLOSED) {
+            console.warn(`replay stream for ${id} closed`);
+        }
+    };
 
-    return () => es.close(); // cleanup fn
+    return () => es.close();
 };
 

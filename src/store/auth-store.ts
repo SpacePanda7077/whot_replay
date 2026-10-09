@@ -1,3 +1,4 @@
+// auth-store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -21,11 +22,14 @@ type AuthType = {
     setSignUpResult: (res: SignUpResponseType) => void;
     setLoginResult: (res: LoginResponseType) => void;
     logout: () => void;
+
+    // NEW: true only when logged in AND not expired
+    isLoggedIn: () => boolean;
 };
 
 export const useAuth = create<AuthType>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             sign_up_result: null,
             login_result: null,
             login_expires_at: null,
@@ -38,7 +42,7 @@ export const useAuth = create<AuthType>()(
             setLoginResult: (res) =>
                 set({
                     login_result: res,
-                    login_expires_at: Date.now() + 30 * 60 * 1000,
+                    login_expires_at: Date.now() + 30 * 60 * 1000, // 30 min
                 }),
 
             logout: () =>
@@ -47,10 +51,18 @@ export const useAuth = create<AuthType>()(
                     login_expires_at: null,
                     sign_up_result: null,
                 }),
+
+            isLoggedIn: () => {
+                const { login_result, login_expires_at } = get();
+                return (
+                    !!login_result &&
+                    !!login_expires_at &&
+                    login_expires_at > Date.now()
+                );
+            },
         }),
         {
             name: "auth-storage",
         },
     ),
 );
-

@@ -27,27 +27,31 @@ export default function KeyFeatures() {
     ];
     return (
         <>
-            <section id="features" className="mt-10 w-full px-8">
-                <div className="text-center">
+            <section id="features" className="py-10 w-full px-8 bg-[#370025]">
+                {/* <div className="text-center">
                     <h2 className="text-3xl text-white font-bold">
                         Key <span className="text-[#FFB800]">Features</span>
                     </h2>
                     <p>Everything you need to play, win and have fun</p>
-                </div>
+                </div> */}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
                     {keyfeatures.map((features, i) => (
                         <div
                             key={i}
-                            className="flex flex-col gap-2 text-center bg-[#2B061C] items-center border border-[#FFB800]/20 p-4 rounded-lg"
+                            className="flex  gap-2 text-center bg-[#2B061C] items-center border-2 border-[#FFB800]/60 p-4 rounded-lg"
                         >
-                            <div className="text-2xl text-[#FFB800] p-2 border border-[#FFB800]/20 p-4 rounded-lg ">
+                            <div className="text-2xl text-[#FFB800] p-2 border border-[#FFB800]/20 p-4 rounded-lg bg-gradient-to-b from-[#A4058A] to-[#AE024F] ">
                                 {features.Icon}
                             </div>
-                            <h2 className="text-white font-semibold">
-                                {features.topic}
-                            </h2>
-                            <p className="text-xs">{features.desc}</p>
+                            <div className="flex flex-col gap-2 items-start">
+                                <h2 className="text-white font-semibold">
+                                    {features.topic}
+                                </h2>
+                                <p className="text-xs text-start">
+                                    {features.desc}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>

@@ -1,8 +1,11 @@
 import { Scene } from "phaser";
+import { suit_shapes } from "../repaly.data";
 
 export class CardCounterAndAvatar {
     scene: Scene;
     card_left_text: Phaser.GameObjects.Text;
+    needed_shape: Phaser.GameObjects.Sprite;
+    needed_shape_bg: Phaser.GameObjects.Rectangle;
 
     constructor(
         scene: Scene,
@@ -43,6 +46,14 @@ export class CardCounterAndAvatar {
                 strokeThickness: 10,
             })
             .setOrigin(0.5);
+        this.needed_shape_bg = this.scene.add
+            .rectangle(-150, 0, 200, 200, 0xffffff)
+            .setStrokeStyle(3, 0x000000)
+            .setVisible(false);
+        this.needed_shape = this.scene.add
+            .sprite(-150, 0, "circle")
+            .setVisible(false)
+            .setTint(0x681f3d);
 
         container
             .add([
@@ -52,6 +63,8 @@ export class CardCounterAndAvatar {
                 text_bg,
                 this.card_left_text,
                 name,
+                this.needed_shape_bg,
+                this.needed_shape,
             ])
             .setDepth(1000000);
     }
@@ -66,6 +79,17 @@ export class CardCounterAndAvatar {
             return;
         }
         this.card_left_text.text = cards_left.toString();
+    }
+
+    select_suits(suit: number) {
+        const shape = suit_shapes[suit];
+        this.needed_shape.setTexture(shape);
+        this.needed_shape_bg.setVisible(true);
+        this.needed_shape.setVisible(true);
+    }
+    deSelect_Suit() {
+        this.needed_shape_bg.setVisible(false);
+        this.needed_shape.setVisible(false);
     }
 }
 

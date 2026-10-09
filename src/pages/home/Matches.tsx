@@ -16,8 +16,9 @@ import UpcomingAccumulator from "./UpcomingAccumulator";
 export default function Matches() {
     //const live_replay = useReplayStore((s) => s.);
     const [matchType, setMatchType] = useState<"SINGLE" | "MULTI">("SINGLE");
-    const logs = useAuth((s) => s.login_result);
+    const isLoggedIn = useAuth((s) => s.isLoggedIn());
     const upcoming_replays = useReplayStore((s) => s.replays);
+    const accumulator_replays = useReplayStore((s) => s.accumulator);
     const [betAmount, setBetAmout] = useState(200);
     const [choosenBet, setChoosenBet] = useState({
         game_id: "",
@@ -40,7 +41,7 @@ export default function Matches() {
                     <LiveMatch id={live_replay.id} teams={live_replay.teams} />
                 )} */}
 
-                {logs ? (
+                {isLoggedIn ? (
                     <div className="flex flex-col gap-4 ">
                         {upcoming_replays && upcoming_replays.length > 0 ? (
                             <div>
@@ -87,11 +88,12 @@ export default function Matches() {
 
                                 {matchType === "MULTI" && (
                                     <div className="shadow-lg shadow-black relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] md:min-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
-                                        {duumy_accumulator.map((m) => (
+                                        {accumulator_replays.map((m) => (
                                             <UpcomingAccumulator
                                                 key={m.id}
                                                 id={m.id}
                                                 legs={m.legs}
+                                                status={m.status}
                                                 choosenBet={
                                                     choosenAccumulatorBet
                                                 }
@@ -110,13 +112,15 @@ export default function Matches() {
                         )}
                         <BetWidget
                             choosenBet={choosenBet}
+                            choosenAccumulatorBet={choosenAccumulatorBet}
+                            matchType={matchType}
                             betAmount={betAmount}
                             setBetAmount={setBetAmout}
                         />
                     </div>
                 ) : (
                     <div className=" relative mb-20 flex flex-col gap-3">
-                        {!logs && <NotLoggedIn />}
+                        <NotLoggedIn />
                         {dummy_replay.map((m) => (
                             <UpcomingMatch
                                 key={m.id}

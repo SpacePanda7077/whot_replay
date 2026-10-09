@@ -1,38 +1,48 @@
-import { useState } from "react";
-type FilterType = "All" | "Active" | "Won" | "Lost";
-export default function StakeFilter() {
-    const [selected, setSelected] = useState<FilterType>("All");
+import { bet, is_accumulator } from "../../store/history";
+
+export type FilterType = "All" | "Single" | "Accumulator" | "Won" | "Lost";
+
+export const FILTERS: FilterType[] = [
+    "All",
+    "Single",
+    "Accumulator",
+    "Won",
+    "Lost",
+];
+
+export function matches_filter(b: bet, filter: FilterType) {
+    switch (filter) {
+        case "All":
+            return true;
+        case "Single":
+            return !is_accumulator(b);
+        case "Accumulator":
+            return is_accumulator(b);
+        case "Won":
+            return b.status === "won";
+        case "Lost":
+            return b.status === "lost";
+    }
+}
+
+interface Prop {
+    selected: FilterType;
+    onChange: (filter: FilterType) => void;
+}
+
+export default function StakeFilter({ selected, onChange }: Prop) {
     return (
-        <div className="flex items-center gap-4 text-sm">
-            <div
-                onClick={() => setSelected("All")}
-                className={`px-4 py-1 rounded-3xl border border-white/20 cursor-pointer
-                   ${selected === "All" ? "bg-[#FFB800] text-[#2E041D]" : "bg-white/5 text-white"} `}
-            >
-                All
-            </div>
-            <div
-                onClick={() => setSelected("Active")}
-                className={`px-4 py-1 rounded-3xl border border-white/20 cursor-pointer
-                   ${selected === "Active" ? "bg-[#FFB800] text-[#2E041D]" : "bg-white/5 text-white"} `}
-            >
-                Active
-            </div>
-            <div
-                onClick={() => setSelected("Won")}
-                className={`px-4 py-1 rounded-3xl border border-white/20 cursor-pointer
-                   ${selected === "Won" ? "bg-[#FFB800] text-[#2E041D]" : "bg-white/5 text-white"} `}
-            >
-                Won
-            </div>
-            <div
-                onClick={() => setSelected("Lost")}
-                className={`px-4 py-1 rounded-3xl border border-white/20 cursor-pointer
-                   ${selected === "Lost" ? "bg-[#FFB800] text-[#2E041D]" : "bg-white/5 text-white"} `}
-            >
-                Lost
-            </div>
+        <div className="flex items-center gap-4 text-sm overflow-x-auto">
+            {FILTERS.map((f) => (
+                <div
+                    key={f}
+                    onClick={() => onChange(f)}
+                    className={`px-4 py-1 rounded-3xl border border-white/20 cursor-pointer whitespace-nowrap
+                   ${selected === f ? "bg-[#FFB800] text-[#2E041D]" : "bg-white/5 text-white"} `}
+                >
+                    {f}
+                </div>
+            ))}
         </div>
     );
 }
-

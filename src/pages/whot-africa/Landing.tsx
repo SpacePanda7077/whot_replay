@@ -23,7 +23,7 @@ export default function Landing() {
 
     return (
         <>
-            <div className="relative flex gap-10 w-full py-4">
+            <div className="relative bg-[url('/assets/react/landing-1.png')] bg-cover pt-30 flex gap-10 w-full h-full py-4">
                 <div className="w-full flex flex-col gap-6 items-center justify-center">
                     <div className="bg-[#FFB800]/20 w-fit px-4 py-1 rounded-3xl border border-[#FFB800] text-[#FFB800]">
                         Premier Mobile Gaming
@@ -74,7 +74,7 @@ export default function Landing() {
                     </div>
                 </div>
                 <div className="hidden md:flex w-full">
-                    <img src="assets/react/person.svg" loading="lazy" />
+                    <img src="assets/react/two_phones.png" loading="lazy" />
                 </div>
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-30 bg-gradient-to-b from-transparent to-black/80" />
             </div>

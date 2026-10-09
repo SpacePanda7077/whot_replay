@@ -14,7 +14,10 @@ export default function StakeDashboard() {
                 </div>
                 <div className="flex flex-col gap-2 bg-[#2e041d] p-2 rounded-lg w-full border border-[#FFB800]/20">
                     <p className="text-xs">Net Profit</p>
-                    <h2 className="text-lg text-[#22C55E] font-bold">
+                    <h2
+                        style={{ color: netProfitLoss < 0 ? "red" : "#22C55E" }}
+                        className="text-lg font-bold"
+                    >
                         ₦{netProfitLoss.toLocaleString()}
                     </h2>
                 </div>

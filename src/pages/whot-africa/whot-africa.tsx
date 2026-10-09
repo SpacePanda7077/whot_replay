@@ -8,7 +8,7 @@ export default function WhotAfrica() {
     return (
         <>
             <Header />
-            <div className="flex flex-col items-center justify-center mt-30 text-white/70 ">
+            <div className="flex flex-col items-center justify-center text-white/70 ">
                 <Landing />
                 <KeyFeatures />
                 <Experience />

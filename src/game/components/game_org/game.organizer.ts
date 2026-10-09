@@ -1,23 +1,29 @@
-// GameOrganizer.ts
-import { Scene, Math as PhaserMath } from "phaser";
+import { Scene } from "phaser";
 
 import { Card } from "../Card";
 import { Player } from "../Player";
 import { Card_Info, suit_shapes } from "../../repaly.data";
 import { Players } from "../../../store/replay.store";
+
 export type placement = {
     x: number;
     y: number;
     rot: number;
     play_rot: number;
 };
+
 export class GameOrganizer {
     initial_deck: Card[] = [];
     scene: Scene;
-    placements: { x: number; y: number; rot: number; play_rot: number }[];
-    market_offset: number;
+    placements: placement[];
+    market_offset = 0;
     players: Player[] = [];
     turn_circle: Phaser.GameObjects.Arc;
+
+    // When true, Card.move_to / Card.reveal skip tweens and jump straight to
+    // their final state. Game1 turns this on while fast-forwarding catch-up
+    // frames after a refresh.
+    instant = false;
 
     constructor(scene: Scene) {
         this.scene = scene;
@@ -25,7 +31,7 @@ export class GameOrganizer {
         const height = scene.scale.height;
 
         this.placements = [
-            { x: width / 2 + 100, y: height - 100, rot: 0, play_rot: 60 }, // 2: bottom
+            { x: width / 2 + 100, y: height - 100, rot: 0, play_rot: 60 }, // 0: bottom
             { x: width / 2 - 100, y: 100, rot: 0, play_rot: 40 }, // 1: top
         ];
 
@@ -46,6 +52,11 @@ export class GameOrganizer {
         players: Players,
         initail_hands: Card_Info[][],
     ) {
+        // Make initialisation idempotent.
+        this.players = [];
+        this.initial_deck = [];
+        this.market_offset = 0;
+
         players.forEach((decks, playerIndex) => {
             const placemant = this.placements[playerIndex];
             const player = new Player(
@@ -84,12 +95,6 @@ export class GameOrganizer {
         }
     }
 
-    // pure math, reused by initial deal AND later re-fanning
-
-    // re-fan every card already in a hand (call after add/remove)
-
-    // called when a card moves from the market into a player's hand
-
     addCardCounterAndAvatar(x: number, y: number) {
         const container = this.scene.add.container(x, y);
         const border = this.scene.add.circle(0, 50, 55, 0x703857);
@@ -100,9 +105,9 @@ export class GameOrganizer {
         const text_bg = this.scene.add.circle(50, -30, 25, 0x12070d);
         const card_left_text = this.scene.add
             .text(50, -30, "6", {
-                fontSize: "24px", // Adjust size as needed
-                fontStyle: "bold", // Makes the text bold
-                fontFamily: "Arial", // Optional: specify font family
+                fontSize: "24px",
+                fontStyle: "bold",
+                fontFamily: "Arial",
             })
             .setOrigin(0.5);
 
@@ -111,4 +116,3 @@ export class GameOrganizer {
             .setDepth(1000000);
     }
 }
-

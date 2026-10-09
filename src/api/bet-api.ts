@@ -29,6 +29,34 @@ export const Place_Bet = async (
     return res;
 };
 
+export const Place_Multi_Bet = async (
+    token: string,
+    data: {
+        accumulator_id: string;
+        combo: string;
+        amount: number;
+        slip_code?: string;
+    },
+) => {
+    console.log({ ...data, slip_code: data.slip_code || "" });
+    const res = await axios.post(
+        `${ENDPOINT}/api/accumulators/bets`,
+        {
+            accumulator_id: data.accumulator_id,
+            combo: data.combo,
+            amount: data.amount,
+            slip_code: data.slip_code || "",
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        },
+    );
+
+    return res;
+};
+
 export const Get_Bets = async (token: string) => {
     const res = await axios.get(`${ENDPOINT}/api/bets`, {
         headers: {
@@ -39,3 +67,12 @@ export const Get_Bets = async (token: string) => {
     return res;
 };
 
+export const Get_Accumulator_Bets = async (token: string) => {
+    const res = await axios.get(`${ENDPOINT}/api/accumulators/bets`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return res;
+};

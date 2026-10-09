@@ -1,21 +1,44 @@
-import { bet, calculateBetStats, useHistoryStore } from "../store/history";
-import { useEffect, useState } from "react";
+import {
+    bet_key,
+    calculateBetStats,
+    is_accumulator,
+    useHistoryStore,
+} from "../store/history";
+import { useMemo, useState } from "react";
+import { get_odds, useAllOdds } from "../hooks/useOdds";
 
 import OpenBet from "./openbet";
 
 export default function OpenBets() {
     const betHistory = useHistoryStore((s) => s.bets);
-    const [openBets, setOpenBets] = useState<bet[]>([]);
-    const [amountStaked, setAmountStaked] = useState(0);
+    const odds = useAllOdds();
     const [show, setShow] = useState(false);
 
-    useEffect(() => {
-        const openbets = betHistory.filter((bet) => bet.status === "placed");
-        const { totalStaked, netProfitLoss } = calculateBetStats(openbets);
-        setAmountStaked(totalStaked);
-        console.log(totalStaked, netProfitLoss);
-        setOpenBets(openbets);
-    }, [betHistory]);
+    const openBets = useMemo(
+        () => betHistory.filter((b) => b.status === "placed"),
+        [betHistory],
+    );
+
+    const amountStaked = useMemo(
+        () => calculateBetStats(openBets).totalStaked,
+        [openBets],
+    );
+
+    // Total return if every open bet wins: sum of amount * current odds.
+    // Bets with no odds yet are skipped and flagged so we can show "~".
+    const { potential, missing } = useMemo(() => {
+        let potential = 0;
+        let missing = 0;
+        for (const b of openBets) {
+            const acc = is_accumulator(b);
+            const id = acc ? b.accumulator_id : b.game_id;
+            const key = acc ? b.combo : b.team;
+            const o = id && key ? get_odds(odds, id)?.[key] : undefined;
+            if (typeof o === "number") potential += b.amount * o;
+            else missing += 1;
+        }
+        return { potential: Math.round(potential), missing };
+    }, [openBets, odds]);
 
     return (
         <>
@@ -32,7 +55,11 @@ export default function OpenBets() {
                     </div>
                     <div className="flex flex-col items-end ">
                         <div className="text-xs">POTENTIAL EARNINGS</div>
-                        <div className="text-[#ffb800] font-bold">₦7000</div>
+                        <div className="text-[#ffb800] font-bold">
+                            {openBets.length === 0
+                                ? "₦0"
+                                : `${missing > 0 ? "~" : ""}₦${potential}`}
+                        </div>
                     </div>
                 </div>
                 {show && (
@@ -40,7 +67,7 @@ export default function OpenBets() {
                         {openBets.length > 0 ? (
                             <>
                                 {openBets.map((b) => (
-                                    <OpenBet key={b.id} bet={b} />
+                                    <OpenBet key={bet_key(b)} bet={b} />
                                 ))}
                             </>
                         ) : (
@@ -54,4 +81,3 @@ export default function OpenBets() {
         </>
     );
 }
-

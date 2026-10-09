@@ -13,7 +13,7 @@ import { useWalletStore } from "../../store/wallet-store";
 export default function Header() {
     const navigate = useNavigate();
     const [sidebarOpen, setSideBarOpen] = useState(false);
-    const log = useAuth((s) => s.login_result);
+    const isLoggedIn = useAuth((s) => s.isLoggedIn());
     const wallet = useWalletStore((s) => s.wallet);
 
     return (
@@ -55,7 +55,7 @@ export default function Header() {
                         <p>whot africa</p>
                     </span>
                 </div>
-                {log && (
+                {isLoggedIn && (
                     <div className="hidden lg:flex items-center gap-5">
                         <div className="flex gap-2 items-center bg-white/10 py-1 px-2 border font-bold border-white/20 rounded-lg">
                             <CiWallet size={24} color="#FFB800" />
@@ -69,7 +69,7 @@ export default function Header() {
                         </button>
                     </div>
                 )}
-                {!log && (
+                {!isLoggedIn && (
                     <div className="hidden lg:flex items-center gap-5">
                         <motion.button
                             whileTap={{ scale: 0.98 }}

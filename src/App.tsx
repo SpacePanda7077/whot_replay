@@ -12,6 +12,8 @@ import ProtectedRoute from "./components/protected-route";
 import { useWalletStore } from "./store/wallet-store";
 import { useQuery } from "@tanstack/react-query";
 import { GetWallet } from "./api/wallet-api";
+import Terms from "./pages/whot-africa/terms";
+import Privacy_Policy from "./pages/whot-africa/privacy-policy";
 
 function App() {
     const logs = useAuth((s) => s.login_result);
@@ -46,6 +48,8 @@ function App() {
                 </Route>
 
                 <Route path="/whot-africa" element={<WhotAfrica />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy-policy" element={<Privacy_Policy />} />
             </Routes>
         </div>
     );
