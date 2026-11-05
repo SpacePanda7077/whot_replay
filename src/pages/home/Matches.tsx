@@ -31,7 +31,11 @@ export default function Matches() {
         combo: [],
     });
 
-    const { refetchGames } = useFetchGames();
+    const { refetchGames, refetchAccumulators } = useFetchGames();
+    const refetch = () => {
+        refetchGames();
+        refetchAccumulators();
+    };
 
     return (
         <>
@@ -79,7 +83,7 @@ export default function Matches() {
                                                     setChoosenBet={
                                                         setChoosenBet
                                                     }
-                                                    refetch={refetchGames}
+                                                    refetch={refetch}
                                                 />
                                             ))}
                                     </div>
@@ -132,7 +136,7 @@ export default function Matches() {
                                 }}
                                 choosenBet={choosenBet}
                                 setChoosenBet={setChoosenBet}
-                                refetch={refetchGames}
+                                refetch={refetch}
                             />
                         ))}
                     </div>

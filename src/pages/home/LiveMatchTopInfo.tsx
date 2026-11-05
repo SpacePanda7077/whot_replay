@@ -21,7 +21,7 @@ export default function LiveMatchTopInfo({ id, status }: Prop) {
                             }}
                             className="flex gap-2 items-center w-fit py-1 px-2 rounded-lg font-bold"
                         >
-                            <p>{status}</p>
+                            <p>currently playing</p>
                         </div>
                         <p className="text-white/70">#{id}</p>
                     </div>

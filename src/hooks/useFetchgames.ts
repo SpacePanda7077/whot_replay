@@ -7,7 +7,11 @@ export const useFetchGames = () => {
     const setReplays = useReplayStore((s) => s.setReplays);
     const setAccumulator = useReplayStore((s) => s.setAccumulator);
 
-    const { data: Accumulators, error: GetAccumulatorError } = useQuery({
+    const {
+        data: Accumulators,
+        error: GetAccumulatorError,
+        refetch: refetchAccumulators,
+    } = useQuery({
         queryKey: ["get_accumulators"],
         queryFn: () => GetAccumulatorReplays(),
     });
@@ -34,11 +38,12 @@ export const useFetchGames = () => {
     useEffect(() => {
         if (Replays) {
             setReplays(Replays.games);
+            console.log("Replays", Replays);
         }
         if (GetReplaysError) {
             console.log(GetReplaysError);
         }
     }, [Replays, GetReplaysError]);
 
-    return { refetchGames: refetch };
+    return { refetchGames: refetch, refetchAccumulators };
 };

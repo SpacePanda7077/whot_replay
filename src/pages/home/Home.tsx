@@ -180,8 +180,8 @@ export default function Home() {
                                                     />
                                                 </div>
                                                 {watchIndex === i && (
-                                                    <div className="bg-[#f01e07] p-2 rounded-lg -rotate-5 text-[8px] absolute top-[-5%] right-0 font-bold text-white">
-                                                        Currently Playing
+                                                    <div className="bg-[#f01e07] p-2 rounded-lg text-[8px] absolute top-[-15%] right-0 font-bold text-white">
+                                                        Watching
                                                     </div>
                                                 )}
                                             </motion.div>
@@ -266,8 +266,8 @@ export default function Home() {
                                             />
                                         </div>
                                         {watchIndex === i && (
-                                            <div className="bg-[#f01e07] p-2 rounded-lg -rotate-5 text-[8px] absolute top-[-5%] right-0 font-bold text-white">
-                                                Currently Playing
+                                            <div className="bg-[#f01e07] p-2 rounded-lg text-[8px] absolute top-[-15%] right-0 font-bold text-white">
+                                                Watching
                                             </div>
                                         )}
                                     </motion.div>
