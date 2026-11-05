@@ -47,7 +47,7 @@ export default function SideBar() {
                             onClick={() => navigate("/wallet")}
                             className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
                         >
-                            Deposit
+                            wallet
                         </button>
                     </div>
                 )}
@@ -71,4 +71,3 @@ export default function SideBar() {
         </>
     );
 }
-

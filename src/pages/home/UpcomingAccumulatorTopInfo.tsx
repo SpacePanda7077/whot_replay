@@ -17,7 +17,6 @@ export default function UpcomingAccumulatorTopInfo({
     total,
     at_risk = false,
 }: Prop) {
-    console.log(status, picked, total, at_risk);
     return (
         <div>
             <div className="flex items-center justify-between">
@@ -41,7 +40,7 @@ export default function UpcomingAccumulatorTopInfo({
                 </div>
                 <div className="text-[10px]">
                     {status === "scheduled"
-                        ? ""
+                        ? "Bet not open yet"
                         : status === "open"
                           ? `Pick all ${total} matches :`
                           : " bet closed "}
@@ -56,4 +55,3 @@ export default function UpcomingAccumulatorTopInfo({
         </div>
     );
 }
-

@@ -2,6 +2,7 @@ import { OddsLeg } from "../../api/odds.client";
 import { Players } from "../../store/replay.store";
 
 import { Side } from "./Accumulator.utils";
+import SplitBar from "./SplitBar";
 
 interface Prop {
     id: string; // accumulator id (stored in choosenBet.game_id)
@@ -97,21 +98,10 @@ export default function AccumulatorChoices({
             </div>
 
             {has_split && leg_split && (
-                <div className="mt-1">
-                    <div className="h-1 rounded bg-blue-500/70 overflow-hidden">
-                        <div
-                            className="h-full bg-orange-500"
-                            style={{ width: `${orange_pct}%` }}
-                        />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-white/60">
-                        <span>{orange_pct}% orange</span>
-                        {!leg_split.passed && (
-                            <span className="text-red-300">too lopsided</span>
-                        )}
-                        <span>{100 - orange_pct}% blue</span>
-                    </div>
-                </div>
+                <SplitBar
+                    orange_percent={orange_pct}
+                    passed={leg_split.passed}
+                />
             )}
         </div>
     );

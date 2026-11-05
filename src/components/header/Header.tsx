@@ -65,7 +65,7 @@ export default function Header() {
                             onClick={() => navigate("/wallet")}
                             className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
                         >
-                            Deposit
+                            Wallet
                         </button>
                     </div>
                 )}
@@ -99,4 +99,3 @@ export default function Header() {
         </>
     );
 }
-

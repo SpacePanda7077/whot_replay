@@ -111,6 +111,9 @@ export default function Matches() {
                         ) : (
                             <div className="shadow-lg shadow-black text-center text-white text-lg font-bold w-full">
                                 No Games Available !!!
+                                <p className="text-xs font-normal text-white/60 mt-1">
+                                    Looking for new games ...
+                                </p>
                             </div>
                         )}
                         <BetWidget
@@ -147,3 +150,4 @@ export default function Matches() {
         </>
     );
 }
+

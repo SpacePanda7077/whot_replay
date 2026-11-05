@@ -1,5 +1,6 @@
 import { Players } from "../../store/replay.store";
 import { useGameOdds } from "../../hooks/useOdds";
+import SplitBar from "./SplitBar";
 
 interface Prop {
     id: string;
@@ -20,6 +21,20 @@ interface Prop {
 const format_odds = (value?: number) =>
     typeof value === "number" ? `${value.toFixed(2)}x` : "–";
 
+// Share of the pool on the orange side. Pari-mutuel odds are ~ pool / side
+// stake, so 1/odds is proportional to each side's stake (the fee cancels out).
+// Returns undefined until both odds are known.
+const orange_share = (orange?: number, blue?: number) => {
+    if (!orange || !blue) return undefined;
+    const o = 1 / orange;
+    const b = 1 / blue;
+    return (o / (o + b)) * 100;
+};
+
+// If one side holds more than this share of the pool when betting closes the
+// match is voided and refunded. SET THIS TO YOUR SERVER'S REAL LIMIT.
+const LOPSIDED_LIMIT = 80;
+
 export default function Choices({
     id,
     teams,
@@ -32,6 +47,14 @@ export default function Choices({
     const handleBet = (game_id: string, team: string) => {
         setChoosenBet({ game_id, team });
     };
+
+    const orange_percent =
+        status === "open"
+            ? orange_share(odds?.orange, odds?.blue)
+            : undefined;
+    const lopsided =
+        orange_percent !== undefined &&
+        (orange_percent > LOPSIDED_LIMIT || orange_percent < 100 - LOPSIDED_LIMIT);
 
     const sides = [
         { key: "orange", dot: "bg-orange-500", team: teams[0] },
@@ -77,6 +100,15 @@ export default function Choices({
                     </div>
                 ))}
             </div>
+
+            {orange_percent !== undefined && (
+                <SplitBar orange_percent={orange_percent} passed={!lopsided} />
+            )}
+
+            <p className="mt-2 text-[10px] text-white/40">
+                If this match's split is too lopsided when betting closes, the
+                match is voided and all stakes are refunded.
+            </p>
         </div>
     );
 }
