@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Prop {
     id: string;
@@ -9,6 +9,7 @@ interface Prop {
     };
     refetch: () => void;
 }
+
 export default function UpcomingMatchTopInfo({
     id,
     status,
@@ -17,26 +18,47 @@ export default function UpcomingMatchTopInfo({
 }: Prop) {
     const [openTime, setOpenTime] = useState({ min: 0, sec: 0 });
     const [closeTime, setCloseTime] = useState({ min: 0, sec: 0 });
+
+    // always call the latest refetch without restarting the interval
+    const refetchRef = useRef(refetch);
+    refetchRef.current = refetch;
+
     useEffect(() => {
-        const timer = setInterval(() => {
-            const { minutes: openMin, seconds: openSec } = getTimeRemaining(
-                time.open_at,
-            );
+        let lastFetch = 0;
 
-            const { minutes: closeMin, seconds: closeSec } = getTimeRemaining(
-                time.close_at,
-            );
-            setOpenTime({ min: openMin, sec: openSec });
-            setCloseTime({ min: closeMin, sec: closeSec });
-            if (openMin === 0 && openSec === 0) {
-                refetch();
+        const tick = () => {
+            const open = getTimeRemaining(time.open_at);
+            const close = getTimeRemaining(time.close_at);
+
+            setOpenTime({ min: open.minutes, sec: open.seconds });
+            setCloseTime({ min: close.minutes, sec: close.seconds });
+
+            // only watch the countdown that matches the current status
+            const target =
+                status === "scheduled"
+                    ? open
+                    : status === "open"
+                      ? close
+                      : null;
+
+            // at 0:0 refetch, and retry every 3s until the server status changes
+            if (
+                target &&
+                target.minutes === 0 &&
+                target.seconds === 0 &&
+                Date.now() - lastFetch > 3000
+            ) {
+                lastFetch = Date.now();
+                refetchRef.current();
             }
-        }, 1000);
-
-        return () => {
-            clearInterval(timer);
         };
-    }, []);
+
+        tick();
+        const timer = setInterval(tick, 1000);
+
+        return () => clearInterval(timer);
+    }, [status, time.open_at, time.close_at]);
+
     return (
         <>
             <div>
@@ -51,11 +73,11 @@ export default function UpcomingMatchTopInfo({
                                         ? "#2E071B"
                                         : "white",
                             }}
-                            className="flex gap-2 items-center  w-fit py-1 px-2 rounded-lg font-bold"
+                            className="flex gap-2 items-center w-fit py-1 px-2 rounded-lg font-bold"
                         >
                             <p>{status}</p>
                         </div>
-                        <p className="text-white/70 ">#{id}</p>
+                        <p className="text-white/70">#{id}</p>
                     </div>
                     <div className="text-[10px]">
                         {status === "scheduled"
@@ -88,4 +110,3 @@ export function getTimeRemaining(date: string) {
         seconds: totalSeconds % 60,
     };
 }
-

@@ -62,6 +62,9 @@ export default function AccumulatorChoices({
 
     return (
         <div className="mt-2">
+            <p className="text-[10px] text-white/50 mb-1">
+                Match {index + 1}
+            </p>
             <div className="flex gap-4 items-center ">
                 {sides.map((side, i) => (
                     <div key={side.key} className="contents">
@@ -69,9 +72,9 @@ export default function AccumulatorChoices({
                         <button
                             disabled={disabled}
                             onClick={() => handleBet(side.key)}
-                            style={{ opacity: disabled ? 0.4 : 1 }}
+                            style={{ opacity: disabled ? 0.3 : 1 }}
                             className={` w-full flex justify-between items-center
-                                 p-3 border border-white/20 rounded-lg cursor-pointer
+                                 p-1 border border-white/20 rounded-lg cursor-pointer
                                  ${
                                      choosenBet.game_id === id &&
                                      choosenBet.combo[index] === side.key
@@ -80,11 +83,13 @@ export default function AccumulatorChoices({
                                  }
                                  `}
                         >
-                            <div className="flex items-center gap-2">
-                                <div
-                                    className={`w-2 h-2 rounded-full ${side.dot}`}
-                                ></div>
-                                <h1>{`${side.team.full_name.split(" ")[0]}`}</h1>
+                            <div className="flex items-center justify-between w-full ">
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className={`w-2 h-2 rounded-full ${side.dot}`}
+                                    ></div>
+                                    <h1>{`${side.team.full_name.split(" ")[0]} `}</h1>
+                                </div>
                             </div>
                         </button>
                     </div>

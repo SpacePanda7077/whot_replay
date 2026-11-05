@@ -1,43 +1,53 @@
-import { IoIosArrowDown } from "react-icons/io";
-import { IoIosArrowUp } from "react-icons/io";
-
 interface Prop {
     id: string;
-    show: boolean;
     status: string;
+    // how many of the 3 matches have a pick
+    picked: number;
+    total: number;
     // true when a leg is currently outside the allowed split
     at_risk?: boolean;
-    setShow: (value: boolean) => void;
 }
 
+// Same layout as UpcomingMatchTopInfo: status badge + id on the left,
+// a small info block on the right (picks progress instead of a countdown).
 export default function UpcomingAccumulatorTopInfo({
     id,
-    show,
     status,
+    picked,
+    total,
     at_risk = false,
-    setShow,
 }: Prop) {
     return (
-        <div onClick={() => setShow(!show)} className="cursor-pointer">
+        <div>
             <div className="flex items-center justify-between">
-                <div className="text-[10px] flex flex-col items-start gap-1">
-                    <p className="text-white/70 ">Id : #{id}</p>
-                    <p className="text-white/70 ">Status : {status}</p>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] ">
+                <div className="text-[10px] flex items-center gap-2">
+                    <div
+                        style={{
+                            backgroundColor:
+                                status === "locked" ? "orange" : "green",
+                            color: status === "scheduled" ? "#2E071B" : "white",
+                        }}
+                        className="flex gap-2 items-center w-fit py-1 px-2 rounded-lg font-bold"
+                    >
+                        <p>{status === "locked" ? "Scheduled" : "Open"}</p>
+                    </div>
+                    <p className="text-white/70">#{id}</p>
                     {at_risk && (
                         <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">
                             may void
                         </span>
                     )}
-                    <p>{show ? "UnShow" : "Show"} </p>
-                    {show ? (
-                        <div>
-                            <IoIosArrowDown />
-                        </div>
-                    ) : (
-                        <div>
-                            <IoIosArrowUp />
+                </div>
+                <div className="text-[10px]">
+                    {status === "locked"
+                        ? ""
+                        : status === "open"
+                          ? `Pick all ${total} matches :`
+                          : " bet closed "}
+
+                    {status === "open" && (
+                        <div className="text-white font-bold">
+                            {picked}/{total}
                         </div>
                     )}
                 </div>
@@ -45,3 +55,4 @@ export default function UpcomingAccumulatorTopInfo({
         </div>
     );
 }
+

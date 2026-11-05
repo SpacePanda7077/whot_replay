@@ -1,4 +1,3 @@
-import LiveMatch from "./LiveMatch";
 import UpcomingMatch from "./UpcomingMatch";
 import Accumulator from "./Accumulator";
 import {
@@ -144,4 +143,3 @@ export default function Matches() {
         </>
     );
 }
-

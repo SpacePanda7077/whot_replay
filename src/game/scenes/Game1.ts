@@ -21,6 +21,12 @@ type Frame = {
 const FAST_FORWARD_THRESHOLD = 3;
 // Frames arriving within this window are batched together.
 const BATCH_WINDOW_MS = 50;
+// Let the last card animation play before the winner screen takes over.
+const WINNER_DELAY_MS = 800;
+const WINNER_DEPTH = 100000100;
+// Player colours: index 0 = orange side, index 1 = blue side.
+const WINNER_COLORS = [0xf97316, 0x3b82f6];
+const CONFETTI_COLORS = [0xffa400, 0xf01e07, 0x3b82f6, 0x22c55e, 0xffffff];
 
 export class Game1 extends Scene {
     blind_cover: Phaser.GameObjects.Rectangle;
@@ -32,6 +38,12 @@ export class Game1 extends Scene {
     ready = false;
     last_seq = -1;
     drain_scheduled = false;
+
+    // winner screen state
+    player_info: Players | null = null;
+    winner_objects: Phaser.GameObjects.GameObject[] = [];
+    winner_timer?: Phaser.Time.TimerEvent;
+    winner_active = false;
 
     constructor() {
         super("Game1");
@@ -47,13 +59,17 @@ export class Game1 extends Scene {
         this.ready = false;
         this.last_seq = -1;
         this.drain_scheduled = false;
+        this.player_info = null;
+        this.winner_objects = [];
+        this.winner_timer = undefined;
+        this.winner_active = false;
 
         const width = this.scale.width;
         const height = this.scale.height;
         this.cameras.main.setZoom(0.8);
 
         if (!this.sound.isPlaying("bg")) {
-            this.sound.play("bg", { loop: true, volume: 0.6 });
+            // this.sound.play("bg", { loop: true, volume: 0.6 });
         }
 
         this.blind_cover = this.add
@@ -112,11 +128,13 @@ export class Game1 extends Scene {
     handle_events() {
         EventBus.once("game_start", this.handle_game_start);
         EventBus.on("frame", this.handle_frame_event);
+        EventBus.on("game_end", this.handle_game_end);
     }
 
     cleanup_events() {
         EventBus.off("game_start", this.handle_game_start);
         EventBus.off("frame", this.handle_frame_event);
+        EventBus.off("game_end", this.handle_game_end);
     }
 
     handle_game_start = (data: {
@@ -125,6 +143,8 @@ export class Game1 extends Scene {
         initial_last_card: { suit: number; number: number };
         players: Players;
     }) => {
+        this.hide_winner_screen();
+        this.player_info = data.players;
         this.blind_cover.setVisible(false);
         this.loading_text.setVisible(false);
         this.organizer.initialze_game(
@@ -137,6 +157,210 @@ export class Game1 extends Scene {
         // Anything that arrived before game_start is waiting in the queue.
         this.schedule_drain();
     };
+
+    handle_game_end = (data: { winner_player_index: number }) => {
+        console.log(data);
+        if (this.winner_active) return; // already showing / scheduled
+        this.winner_active = true;
+        this.winner_timer = this.time.delayedCall(WINNER_DELAY_MS, () => {
+            this.blind_cover.setVisible(true);
+            this.show_winner_screen(data.winner_player_index);
+        });
+    };
+
+    hide_winner_screen() {
+        this.winner_timer?.remove(false);
+        this.winner_timer = undefined;
+        this.winner_active = false;
+        for (const obj of this.winner_objects) {
+            this.tweens.killTweensOf(obj);
+            obj.destroy();
+        }
+        this.winner_objects = [];
+    }
+
+    show_winner_screen(winner_index: number) {
+        this.hide_winner_screen();
+        this.winner_active = true; // block a repeated game_end stacking a 2nd screen
+
+        const cx = this.scale.width * 0.5;
+        const cy = this.scale.height * 0.5;
+        const color = WINNER_COLORS[winner_index] ?? 0xffa400;
+        const name =
+            this.player_info?.[winner_index]?.full_name ??
+            `Player ${winner_index + 1}`;
+        const track = <T extends Phaser.GameObjects.GameObject>(o: T) => {
+            this.winner_objects.push(o);
+            return o;
+        };
+
+        // Dim backdrop
+        const dim = track(
+            this.add
+                .rectangle(cx, cy, 100000, 100000, 0x000000, 0.6)
+                .setDepth(WINNER_DEPTH)
+                .setAlpha(0),
+        );
+        this.tweens.add({ targets: dim, alpha: 1, duration: 400 });
+
+        // Rotating light rays behind the banner
+        const rays = track(this.add.graphics().setDepth(WINNER_DEPTH + 1));
+        const RAY_COUNT = 14;
+        const RAY_LEN = Math.max(this.scale.width, this.scale.height);
+        rays.fillStyle(color, 0.25);
+        for (let i = 0; i < RAY_COUNT; i++) {
+            const a0 = (i / RAY_COUNT) * Math.PI * 2;
+            const a1 = a0 + (Math.PI * 2) / RAY_COUNT / 2;
+            rays.beginPath();
+            rays.moveTo(0, 0);
+            rays.lineTo(Math.cos(a0) * RAY_LEN, Math.sin(a0) * RAY_LEN);
+            rays.lineTo(Math.cos(a1) * RAY_LEN, Math.sin(a1) * RAY_LEN);
+            rays.closePath();
+            rays.fillPath();
+        }
+        rays.setPosition(cx, cy).setAlpha(0).setScale(0.2);
+        this.tweens.add({
+            targets: rays,
+            alpha: 1,
+            scale: 1,
+            duration: 600,
+            ease: "Cubic.easeOut",
+        });
+        this.tweens.add({
+            targets: rays,
+            angle: 360,
+            duration: 14000,
+            repeat: -1,
+        });
+
+        // Glow disc
+        const glow = track(
+            this.add
+                .circle(cx, cy, 190, color, 0.35)
+                .setDepth(WINNER_DEPTH + 2)
+                .setScale(0),
+        );
+        this.tweens.add({
+            targets: glow,
+            scale: 1,
+            duration: 500,
+            ease: "Back.easeOut",
+        });
+        this.tweens.add({
+            targets: glow,
+            scale: 1.15,
+            alpha: 0.2,
+            duration: 900,
+            yoyo: true,
+            repeat: -1,
+            delay: 500,
+            ease: "Sine.easeInOut",
+        });
+
+        // Trophy-ish star
+        const star = track(
+            this.add
+                .star(cx, cy - 130, 5, 28, 60, 0xffd700)
+                .setStrokeStyle(6, 0x8a5a00)
+                .setDepth(WINNER_DEPTH + 3)
+                .setScale(0),
+        );
+        this.tweens.add({
+            targets: star,
+            scale: 1,
+            angle: 360,
+            duration: 700,
+            delay: 150,
+            ease: "Back.easeOut",
+        });
+        this.tweens.add({
+            targets: star,
+            scale: 1.12,
+            duration: 700,
+            yoyo: true,
+            repeat: -1,
+            delay: 900,
+            ease: "Sine.easeInOut",
+        });
+
+        // "WINNER" banner
+        const title = track(
+            this.add
+                .text(cx, cy - 20, "WINNER!", {
+                    fontStyle: "bold",
+                    fontSize: "96px",
+                    color: "#ffd700",
+                    stroke: "#2c071a",
+                    strokeThickness: 18,
+                })
+                .setOrigin(0.5)
+                .setDepth(WINNER_DEPTH + 4)
+                .setScale(0),
+        );
+        this.tweens.add({
+            targets: title,
+            scale: 1,
+            duration: 600,
+            delay: 250,
+            ease: "Back.easeOut",
+        });
+
+        // Winner name
+        const label = track(
+            this.add
+                .text(cx, cy + 80, name, {
+                    fontStyle: "bold",
+                    fontSize: "48px",
+                    color: "#ffffff",
+                    stroke: "#000000",
+                    strokeThickness: 10,
+                })
+                .setOrigin(0.5)
+                .setDepth(WINNER_DEPTH + 4)
+                .setAlpha(0),
+        );
+        this.tweens.add({
+            targets: label,
+            alpha: 1,
+            y: cy + 90,
+            duration: 500,
+            delay: 600,
+        });
+
+        // Confetti: manual tweens so it doesn't depend on the Phaser version
+        // (the camera is zoomed out, so spread wider than the canvas).
+        const spread = this.scale.width / 0.8;
+        const top = cy - this.scale.height / 0.8 / 2 - 40;
+        const fall = this.scale.height / 0.8 + 120;
+        for (let i = 0; i < 70; i++) {
+            const piece = track(
+                this.add
+                    .rectangle(
+                        cx - spread / 2 + Math.random() * spread,
+                        top - Math.random() * 300,
+                        8 + Math.random() * 8,
+                        12 + Math.random() * 10,
+                        CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                    )
+                    .setDepth(WINNER_DEPTH + 5)
+                    .setAngle(Math.random() * 360),
+            );
+            this.tweens.add({
+                targets: piece,
+                y: piece.y + fall,
+                x: piece.x + (Math.random() - 0.5) * 160,
+                angle: piece.angle + (Math.random() > 0.5 ? 720 : -720),
+                duration: 2500 + Math.random() * 2000,
+                delay: Math.random() * 1800,
+                repeat: -1,
+                onRepeat: () => {
+                    piece.y = top - Math.random() * 200;
+                },
+            });
+        }
+
+        if (this.cache.audio.exists("winner")) this.sound.play("winner");
+    }
 
     // Frames are never applied directly. They go into a queue, and the queue
     // is drained after a short batch window so bursts can be detected.

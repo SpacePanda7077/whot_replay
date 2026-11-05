@@ -7,10 +7,14 @@ import { streamGame } from "../../api/games-api";
 import { useLiveSlots } from "../../hooks/useLiveSlots";
 
 import { motion } from "motion/react";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { EventBus } from "../../game/EventBus";
 import { Scene } from "phaser";
 import { useSceneStore } from "../../store/scene-store";
 import OpenBets from "../../components/openBet-component";
+import UpcomingMatch from "./UpcomingMatch";
+import LiveChoices from "./LiveChoices";
+import LiveMatchTopInfo from "./LiveMatchTopInfo";
 
 const GAME_SLOTS = [0, 1, 2];
 
@@ -30,6 +34,10 @@ export default function Home() {
     const scene = useSceneStore((s) => s.scene);
     const setScene = useSceneStore((s) => s.setScene);
     const [run, setRun] = useState<SceneRun | null>(null);
+
+    // Mobile room carousel: one room visible at a time, arrows to move.
+    const roomsRef = useRef<HTMLDivElement | null>(null);
+    const [roomPos, setRoomPos] = useState(0);
 
     // Keeps the 3 slots filled and swaps ended games for other locked ones.
     useLiveSlots();
@@ -87,6 +95,22 @@ export default function Home() {
         prev.current = { index: watchIndex, id: game_id };
     }, [watchIndex, game_id, scene]);
 
+    const rooms = GAME_SLOTS.filter((i) => liveReplay?.[i] !== undefined);
+
+    const goToRoom = (pos: number) => {
+        const el = roomsRef.current;
+        const target = el?.children[pos] as HTMLElement | undefined;
+        if (!el || !target) return;
+        el.scrollTo({ left: target.offsetLeft, behavior: "smooth" });
+    };
+
+    const handleRoomsScroll = () => {
+        const el = roomsRef.current;
+        if (!el || el.clientWidth === 0) return;
+        const pos = Math.round(el.scrollLeft / el.clientWidth);
+        setRoomPos(Math.max(0, Math.min(pos, rooms.length - 1)));
+    };
+
     const handleSetwatchIndex = (index: number) => {
         if (!scene || switching) return; // ignore clicks mid-switch
         if (index === watchIndex) return;
@@ -97,39 +121,10 @@ export default function Home() {
     return (
         <>
             <Header />
-            <div className="flex flex-col items-center pb-70 justify-center mt-30 ">
+            <div className="flex flex-col items-center gap-15 pb-70 justify-center mt-30  ">
                 <div className=" w-[95vw] h-full lg:h-[85vh] flex flex-col lg:flex-row gap-4">
                     <div className="w-full h-full">
                         <div className="flex justify-between items-center">
-                            <div className="flex gap-2">
-                                {GAME_SLOTS.map((i) => {
-                                    const available =
-                                        liveReplay[i] !== undefined;
-                                    return (
-                                        <motion.button
-                                            key={i}
-                                            whileTap={{ y: 10 }}
-                                            animate={{
-                                                y: watchIndex === i ? 10 : 0,
-                                            }}
-                                            style={{
-                                                opacity: available
-                                                    ? switching
-                                                        ? 0.7
-                                                        : 1
-                                                    : 0.4,
-                                            }}
-                                            disabled={!available || switching}
-                                            onClick={() =>
-                                                handleSetwatchIndex(i)
-                                            }
-                                            className="bg-[#FFB800] rounded-tr-lg rounded-tl-lg font-bold p-1 flex items-center text-center "
-                                        >
-                                            Game #{i + 1}
-                                        </motion.button>
-                                    );
-                                })}
-                            </div>
                             {liveReplay[watchIndex] && (
                                 <div className="flex items-center gap-4 text-white text-xs">
                                     <p>game id : {liveReplay[watchIndex].id}</p>
@@ -144,12 +139,151 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+                    {/* Mobile: one room at a time, arrows scroll the others in */}
+                    <div className="lg:hidden w-[95vw] max-w-[95vw] shadow-lg shadow-black relative border border-[#ffa400] px-4 pb-4 pt-6 rounded-tr-lg rounded-br-lg rounded-bl-lg">
+                        {rooms.length > 0 ? (
+                            <>
+                                <div
+                                    ref={roomsRef}
+                                    onScroll={handleRoomsScroll}
+                                    className="relative flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                >
+                                    {rooms.map((i) => (
+                                        <div
+                                            key={i}
+                                            className="w-full shrink-0 snap-center px-1 pt-3"
+                                        >
+                                            <motion.div
+                                                onClick={() =>
+                                                    handleSetwatchIndex(i)
+                                                }
+                                                className="w-full shadow-lg text-white shadow-black bg-black/35 relative flex flex-col gap-3 border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg"
+                                            >
+                                                <div>
+                                                    <LiveMatchTopInfo
+                                                        id={liveReplay[i]?.id}
+                                                        status={
+                                                            liveReplay[i]
+                                                                ?.status
+                                                        }
+                                                    />
+                                                    <LiveChoices
+                                                        id={liveReplay[i]?.id}
+                                                        teams={
+                                                            liveReplay[i]
+                                                                ?.players
+                                                        }
+                                                        status={
+                                                            liveReplay[i]
+                                                                ?.status
+                                                        }
+                                                    />
+                                                </div>
+                                                {watchIndex === i && (
+                                                    <div className="bg-[#f01e07] p-2 rounded-lg -rotate-5 text-[8px] absolute top-[-5%] right-0 font-bold text-white">
+                                                        Currently Playing
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {rooms.length > 1 && (
+                                    <>
+                                        <button
+                                            aria-label="Previous room"
+                                            disabled={roomPos === 0}
+                                            onClick={() =>
+                                                goToRoom(roomPos - 1)
+                                            }
+                                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
+                                        >
+                                            <IoIosArrowBack size={18} />
+                                        </button>
+                                        <button
+                                            aria-label="Next room"
+                                            disabled={
+                                                roomPos === rooms.length - 1
+                                            }
+                                            onClick={() =>
+                                                goToRoom(roomPos + 1)
+                                            }
+                                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
+                                        >
+                                            <IoIosArrowForward size={18} />
+                                        </button>
+
+                                        <div className="flex justify-center gap-1.5 mt-2">
+                                            {rooms.map((i, pos) => (
+                                                <button
+                                                    key={i}
+                                                    aria-label={`Room ${pos + 1}`}
+                                                    onClick={() =>
+                                                        goToRoom(pos)
+                                                    }
+                                                    className={`h-1.5 rounded-full transition-all ${
+                                                        pos === roomPos
+                                                            ? "w-4 bg-[#ffa400]"
+                                                            : "w-1.5 bg-white/30"
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <div className="flex items-center justify-center text-white font-bold text-xs">
+                                <p>Match not available</p>
+                            </div>
+                        )}
+                    </div>
 
                     <Matches />
+                </div>
+                <div className="hidden w-[95vw] gap-2 shadow-lg shadow-black relative lg:flex gap-3 border border-[#ffa400] p-4 rounded-tr-lg rounded-br-lg rounded-bl-lg">
+                    {liveReplay.length > 0 ? (
+                        <>
+                            {GAME_SLOTS.map((i) => {
+                                const available = liveReplay[i] !== undefined;
+                                if (!available) return null;
+                                return (
+                                    <motion.div
+                                        key={i}
+                                        onClick={() => handleSetwatchIndex(i)}
+                                        className="w-full shadow-lg text-white shadow-black bg-black/35 relative flex flex-col gap-3 border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg"
+                                    >
+                                        <div>
+                                            <LiveMatchTopInfo
+                                                id={liveReplay[i]?.id}
+                                                status={liveReplay[i]?.status}
+                                            />
+                                            <LiveChoices
+                                                id={liveReplay[i]?.id}
+                                                teams={liveReplay[i]?.players}
+                                                status={liveReplay[i]?.status}
+                                            />
+                                        </div>
+                                        {watchIndex === i && (
+                                            <div className="bg-[#f01e07] p-2 rounded-lg -rotate-5 text-[8px] absolute top-[-5%] right-0 font-bold text-white">
+                                                Currently Playing
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex items-center justify-center text-white font-bold text-xs">
+                                <p>Match not available</p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
             <OpenBets />
         </>
     );
 }
-
