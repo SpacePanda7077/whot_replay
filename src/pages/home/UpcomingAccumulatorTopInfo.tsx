@@ -17,6 +17,7 @@ export default function UpcomingAccumulatorTopInfo({
     total,
     at_risk = false,
 }: Prop) {
+    console.log(status, picked, total, at_risk);
     return (
         <div>
             <div className="flex items-center justify-between">
@@ -24,12 +25,12 @@ export default function UpcomingAccumulatorTopInfo({
                     <div
                         style={{
                             backgroundColor:
-                                status === "locked" ? "orange" : "green",
+                                status === "scheduled" ? "orange" : "green",
                             color: status === "scheduled" ? "#2E071B" : "white",
                         }}
                         className="flex gap-2 items-center w-fit py-1 px-2 rounded-lg font-bold"
                     >
-                        <p>{status === "locked" ? "Scheduled" : "Open"}</p>
+                        <p>{status}</p>
                     </div>
                     <p className="text-white/70">#{id}</p>
                     {at_risk && (
@@ -39,7 +40,7 @@ export default function UpcomingAccumulatorTopInfo({
                     )}
                 </div>
                 <div className="text-[10px]">
-                    {status === "locked"
+                    {status === "scheduled"
                         ? ""
                         : status === "open"
                           ? `Pick all ${total} matches :`
