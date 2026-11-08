@@ -4,7 +4,7 @@ import { GetGames } from "../api/games-api";
 import { EventBus } from "../game/EventBus";
 import { useReplayStore } from "../store/replay.store";
 
-const POLL_MS = 10_000; // refetch /api/replays
+const POLL_MS = 5_000; // refetch /api/games
 const CHECK_MS = 5_000; // re-check end times between refetches
 const END_LINGER_MS = 5_000; // keep the finished board on screen briefly
 
@@ -16,18 +16,22 @@ export function useLiveSlots() {
     const sync = useReplayStore((s) => s.syncLiveReplays);
     const markEnded = useReplayStore((s) => s.markEnded);
 
-    // If you already fetch /api/replays elsewhere, use the same queryKey so
-    // the request is shared instead of doubled.
+    // Same queryKey as useFetchGames so the request is shared. GetGames
+    // returns { games: [...] }, so read .games (a bare array also works).
+    // This must keep polling: useFetchGames stops as soon as one game is
+    // scheduled/open, so without this the list goes stale and the next
+    // set of games never shows up as "locked".
     const { data } = useQuery({
-        queryKey: ["replays"],
+        queryKey: ["get_replays"],
         queryFn: GetGames,
         refetchInterval: POLL_MS,
     });
 
     // New data: store it, then fill/replace slots.
     useEffect(() => {
-        if (!Array.isArray(data)) return;
-        setReplays(data);
+        const games = Array.isArray(data) ? data : data?.games;
+        if (!Array.isArray(games)) return;
+        setReplays(games);
         sync();
     }, [data, setReplays, sync]);
 

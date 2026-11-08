@@ -1,6 +1,6 @@
 import { bet, is_accumulator } from "../../store/history";
 
-export type FilterType = "All" | "Single" | "Accumulator" | "Won" | "Lost";
+export type FilterType = "All" | "Single" | "Accumulator" | "Won" | "Lost" | "Refunded";
 
 export const FILTERS: FilterType[] = [
     "All",
@@ -8,6 +8,7 @@ export const FILTERS: FilterType[] = [
     "Accumulator",
     "Won",
     "Lost",
+    "Refunded",
 ];
 
 export function matches_filter(b: bet, filter: FilterType) {
@@ -22,6 +23,8 @@ export function matches_filter(b: bet, filter: FilterType) {
             return b.status === "won";
         case "Lost":
             return b.status === "lost";
+        case "Refunded":
+            return b.status === "refunded";
     }
 }
 

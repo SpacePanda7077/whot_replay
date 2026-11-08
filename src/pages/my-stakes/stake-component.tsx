@@ -1,4 +1,5 @@
 import { bet, is_accumulator } from "../../store/history";
+import { useDisplayStatus } from "./bet-status";
 
 interface Prop {
     bet: bet;
@@ -11,6 +12,7 @@ const TEAM_NAMES: Record<string, string> = {
 
 const STATUS_STYLE: Record<string, string> = {
     placed: "text-[#FFB800]",
+    playing: "text-sky-400 animate-pulse",
     won: "text-green-400",
     lost: "text-red-400",
     refunded: "text-white/50",
@@ -18,6 +20,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 export default function StakeComponent({ bet }: Prop) {
     const acc = is_accumulator(bet);
+    const status = useDisplayStatus(bet);
 
     return (
         <div className="flex flex-col gap-2 bg-[#2E041D] p-4 rounded-lg border border-[#FFB800]/20">
@@ -26,9 +29,9 @@ export default function StakeComponent({ bet }: Prop) {
                     {acc ? "Accumulator" : "Single"}
                 </p>
                 <div
-                    className={`font-semibold uppercase ${STATUS_STYLE[bet.status] ?? ""}`}
+                    className={`font-semibold uppercase ${STATUS_STYLE[status] ?? ""}`}
                 >
-                    {bet.status}
+                    {status}
                 </div>
             </div>
             <div className="flex items-center justify-between border-b border-b-white/20 pb-4">

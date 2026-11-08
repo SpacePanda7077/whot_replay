@@ -4,6 +4,7 @@ import { getTimeRemaining } from "../pages/home/UpcomingMatchTopInfo";
 import { useReplayStore } from "../store/replay.store";
 import { useEffect, useState } from "react";
 import { useGameOdds } from "../hooks/useOdds";
+import { useDisplayStatus } from "../pages/my-stakes/bet-status";
 
 interface Prop {
     bet: bet;
@@ -16,6 +17,7 @@ export default function OpenBet({ bet: b }: Prop) {
     const [closeTime, setCloseTime] = useState({ min: 0, sec: 0 });
 
     const acc = is_accumulator(b);
+    const display = useDisplayStatus(b);
     // Odds stream ids/keys: game id + orange|blue, or accumulator id + combo.
     const odds_id = acc ? b.accumulator_id : b.game_id;
     const odds_key = acc ? b.combo : b.team;
@@ -44,8 +46,8 @@ export default function OpenBet({ bet: b }: Prop) {
     const settled = b.status && b.status !== "placed";
     const status_label = settled
         ? b.status.toUpperCase()
-        : locked
-          ? "IN MATCH"
+        : display === "playing" || locked
+          ? "PLAYING"
           : "PLACED";
 
     // Won: real payout. Otherwise: estimate from current odds.

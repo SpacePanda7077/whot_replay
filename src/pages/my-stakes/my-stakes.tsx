@@ -1,11 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
 import Header from "../../components/header/Header";
 import StakeDashboard from "./stake-dashboard";
 import StakeHistory from "./stake-history";
 import { useFetchBets } from "../../hooks/useFetchBets";
+import { useStakeGames } from "../../hooks/useStakeGames";
 
 export default function MyStakes() {
     useFetchBets();
+    useStakeGames();
     return (
         <>
             <Header />

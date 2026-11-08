@@ -26,9 +26,10 @@ export const GetGames = async () => {
 // keep feeding frames to whichever scene is active.
 export const streamGame = (id: string) => {
     const es = new EventSource(`${ENDPOINT}/api/games/${id}/stream`);
-
+    console.log("Getting Game");
     es.addEventListener("start", (e) => {
         EventBus.emit("game_start", JSON.parse((e as MessageEvent).data));
+        console.log("Game Start");
     });
 
     es.addEventListener("frame", (e) => {
@@ -39,7 +40,7 @@ export const streamGame = (id: string) => {
         // { game_id, winner_player_index, winner_team, final_hands }
         // useLiveSlots listens for this to replace the finished game.
         EventBus.emit("game_end", JSON.parse((e as MessageEvent).data));
-
+        console.log("Game end");
         const { refetch, setRefetch } = useHistoryStore.getState();
         setRefetch(refetch + 1);
         es.close();
@@ -56,4 +57,3 @@ export const streamGame = (id: string) => {
 
     return () => es.close();
 };
-

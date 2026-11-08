@@ -15,6 +15,8 @@ import OpenBets from "../../components/openBet-component";
 import UpcomingMatch from "./UpcomingMatch";
 import LiveChoices from "./LiveChoices";
 import LiveMatchTopInfo from "./LiveMatchTopInfo";
+import { useBetResults } from "../../hooks/useBetResults";
+import BetResultModal from "../../components/bet-result-modal";
 
 const GAME_SLOTS = [0, 1, 2];
 
@@ -41,6 +43,19 @@ export default function Home() {
 
     // Keeps the 3 slots filled and swaps ended games for other locked ones.
     useLiveSlots();
+
+    // The store outlives this page, but the Phaser game is rebuilt every
+    // time Home mounts and Boot always starts Game1. Reset the selection
+    // so watchIndex matches the scene that is actually running; otherwise
+    // the page waits for e.g. Game2 forever, clicks are ignored and
+    // nothing streams.
+    useEffect(() => {
+        setWatchIndex(0);
+        return () => setWatchIndex(0);
+    }, [setWatchIndex]);
+
+    // Win / loss / refund popup once a watched game you bet on ends.
+    const { results: bet_results, dismiss: dismiss_results } = useBetResults();
 
     const currentGame = liveReplay?.[watchIndex];
     const game_id = currentGame?.id;
@@ -284,6 +299,9 @@ export default function Home() {
                 </div>
             </div>
             <OpenBets />
+            {bet_results.length > 0 && (
+                <BetResultModal results={bet_results} onClose={dismiss_results} />
+            )}
         </>
     );
 }

@@ -10,6 +10,10 @@ export const useFetchBets = () => {
     const setBets = useHistoryStore((s) => s.setBets);
     const [singleBets, setSingleBets] = useState<bet[]>([]);
     const [accumulatorBets, setAccumulatorBets] = useState<bet[]>([]);
+    // While any bet is unsettled, keep checking so "placed" turns into
+    // won / lost / refunded without a manual refresh.
+    const has_placed = bets.some((b) => b.status === "placed");
+    const poll = has_placed ? 5000 : false;
     const {
         data: betData,
         error: betError,
@@ -18,6 +22,7 @@ export const useFetchBets = () => {
         queryKey: ["get_bets"],
         queryFn: () => Get_Bets(logs!.token),
         enabled: logs !== null,
+        refetchInterval: poll,
     });
 
     const {
@@ -28,6 +33,7 @@ export const useFetchBets = () => {
         queryKey: ["get_accumulator_bets"],
         queryFn: () => Get_Accumulator_Bets(logs!.token),
         enabled: logs !== null,
+        refetchInterval: poll,
     });
 
     useEffect(() => {
