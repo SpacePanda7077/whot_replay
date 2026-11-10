@@ -16,6 +16,30 @@ interface IProps
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref)
 {
     const game = useRef<Phaser.Game | null>(null!);
+    const container = useRef<HTMLDivElement | null>(null);
+
+    // Scale.FIT re-measures its parent only on window resize, but the
+    // container also changes size with the layout (breakpoints, rotating a
+    // phone, the page reflowing after load). Re-fit whenever it resizes.
+    useEffect(() =>
+    {
+        const el = container.current;
+        if (!el || typeof ResizeObserver === 'undefined') return;
+
+        let frame = 0;
+        const observer = new ResizeObserver(() =>
+        {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => game.current?.scale.refresh());
+        });
+        observer.observe(el);
+
+        return () =>
+        {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
+        };
+    }, []);
 
     useLayoutEffect(() =>
     {
@@ -74,7 +98,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
     }, [currentActiveScene, ref]);
 
     return (
-        <div id="game-container"></div>
+        <div id="game-container" ref={container} className="h-full w-full"></div>
     );
 
 });

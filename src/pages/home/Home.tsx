@@ -136,26 +136,73 @@ export default function Home() {
     return (
         <>
             <Header />
-            <div className="flex flex-col items-center gap-15 pb-70 justify-center mt-30  ">
-                <div className=" w-[95vw] h-full lg:h-[85vh] flex flex-col lg:flex-row gap-4">
-                    <div className="w-full h-full">
-                        <div className="flex justify-between items-center">
+            {/*
+              Page flow: header is fixed (~80px), so pt-24 clears it. The page
+              scrolls normally; on desktop the game + bet column row gets a
+              viewport-based height and each column scrolls internally, so
+              nothing can spill over the rooms panel below it.
+            */}
+            <main className="mx-auto flex w-[95vw] max-w-[1600px] flex-col gap-4 pt-24 pb-32 lg:pt-28">
+                <div className="flex flex-col gap-4 lg:h-[calc(100dvh-11rem)] lg:min-h-[520px] lg:flex-row">
+                    <section className="flex min-w-0 flex-col gap-1 lg:h-full lg:flex-1">
+                        {/* Top row: game switcher on the left, game info on the right */}
+                        <div className="mb-1 flex shrink-0 items-center justify-between gap-3">
+                            {/* The game being played stays pressed down */}
+                            <div className="flex shrink-0 items-start gap-2">
+                                {GAME_SLOTS.map((i) => {
+                                    const available =
+                                        liveReplay?.[i] !== undefined;
+                                    const pressed = watchIndex === i;
+                                    return (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            aria-pressed={pressed}
+                                            disabled={
+                                                !available ||
+                                                (switching && !pressed)
+                                            }
+                                            onClick={() =>
+                                                handleSetwatchIndex(i)
+                                            }
+                                            className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-bold transition-all duration-100 disabled:opacity-40 sm:px-4 sm:text-sm ${
+                                                pressed
+                                                    ? "translate-y-1 border-b-0 bg-gradient-to-b from-[#4BD97A] to-[#2DA84E] text-white shadow-inner shadow-black/60"
+                                                    : "border-b-4 border-b-[#B88A27] bg-gradient-to-b from-[#ffb800] to-[#F9B92D] text-[#3B0526] active:translate-y-1 active:border-b-0"
+                                            }`}
+                                        >
+                                            Game #{i + 1}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
                             {liveReplay[watchIndex] && (
-                                <div className="flex items-center gap-4 text-white text-xs">
-                                    <p>game id : {liveReplay[watchIndex].id}</p>
-                                    <p>date played: {"10/04/2026"}</p>
+                                <div className="flex min-w-0 flex-col items-end gap-0.5 text-[10px] text-white sm:flex-row sm:items-center sm:gap-4 sm:text-xs">
+                                    <p className="max-w-full truncate">
+                                        game id : {liveReplay[watchIndex].id}
+                                    </p>
+                                    <p className="whitespace-nowrap">
+                                        date played: {"10/04/2026"}
+                                    </p>
                                 </div>
                             )}
                         </div>
 
-                        <div className=" bg-[url('/assets/bg.png')] bg-cover relative w-full h-full flex items-center justify-center rounded-tr-lg rounded-br-lg rounded-bl-lg border-2 border-[#ffa500]/90  overflow-hidden shadow-lg shadow-black">
-                            <div className=" w-full h-full flex items-center justify-center backdrop-blur-lg">
+                        {/*
+                          Phaser uses Scale.FIT, which needs a parent with a real
+                          size. Mobile: a 4:3 box (same ratio as the 1024x768
+                          game). Desktop: fill the column. The canvas lives in an
+                          absolutely positioned layer so its size is always definite.
+                        */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-tr-lg rounded-br-lg rounded-bl-lg border-2 border-[#ffa500]/90 bg-[url('/assets/bg.png')] bg-cover shadow-lg shadow-black lg:aspect-auto lg:min-h-0 lg:flex-1">
+                            <div className="absolute inset-0 backdrop-blur-lg">
                                 <PhaserGame ref={phaserRef} />
                             </div>
                         </div>
-                    </div>
+                    </section>
                     {/* Mobile: one room at a time, arrows scroll the others in */}
-                    <div className="lg:hidden w-[95vw] max-w-[95vw] shadow-lg shadow-black relative border border-[#ffa400] px-4 pb-4 pt-6 rounded-tr-lg rounded-br-lg rounded-bl-lg">
+                    <div className="relative w-full shrink-0 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] px-8 pb-4 pt-6 shadow-lg shadow-black lg:hidden">
                         {rooms.length > 0 ? (
                             <>
                                 <div
@@ -166,13 +213,13 @@ export default function Home() {
                                     {rooms.map((i) => (
                                         <div
                                             key={i}
-                                            className="w-full shrink-0 snap-center px-1 pt-3"
+                                            className="w-full shrink-0 snap-center px-1 pt-4"
                                         >
                                             <motion.div
                                                 onClick={() =>
                                                     handleSetwatchIndex(i)
                                                 }
-                                                className="w-full shadow-lg text-white shadow-black bg-black/35 relative flex flex-col gap-3 border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg"
+                                                className="relative flex w-full min-w-0 flex-col gap-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] bg-black/35 p-2 text-white shadow-lg shadow-black"
                                             >
                                                 <div>
                                                     <LiveMatchTopInfo
@@ -195,7 +242,7 @@ export default function Home() {
                                                     />
                                                 </div>
                                                 {watchIndex === i && (
-                                                    <div className="bg-[#f01e07] p-2 rounded-lg text-[8px] absolute top-[-15%] right-0 font-bold text-white">
+                                                    <div className="absolute -top-3 right-0 rounded-lg bg-[#f01e07] px-2 py-1 text-[10px] font-bold text-white">
                                                         Watching
                                                     </div>
                                                 )}
@@ -212,7 +259,7 @@ export default function Home() {
                                             onClick={() =>
                                                 goToRoom(roomPos - 1)
                                             }
-                                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
+                                            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
                                         >
                                             <IoIosArrowBack size={18} />
                                         </button>
@@ -224,7 +271,7 @@ export default function Home() {
                                             onClick={() =>
                                                 goToRoom(roomPos + 1)
                                             }
-                                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-[#ffa400] text-[#310420] shadow-md shadow-black disabled:opacity-30"
                                         >
                                             <IoIosArrowForward size={18} />
                                         </button>
@@ -257,7 +304,7 @@ export default function Home() {
 
                     <Matches />
                 </div>
-                <div className="hidden w-[95vw] gap-2 shadow-lg shadow-black relative lg:flex gap-3 border border-[#ffa400] p-4 rounded-tr-lg rounded-br-lg rounded-bl-lg">
+                <div className="relative hidden w-full gap-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] p-4 pt-6 shadow-lg shadow-black lg:flex">
                     {liveReplay.length > 0 ? (
                         <>
                             {GAME_SLOTS.map((i) => {
@@ -267,7 +314,7 @@ export default function Home() {
                                     <motion.div
                                         key={i}
                                         onClick={() => handleSetwatchIndex(i)}
-                                        className="w-full shadow-lg text-white shadow-black bg-black/35 relative flex flex-col gap-3 border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg"
+                                        className="relative flex min-w-0 flex-1 cursor-pointer flex-col gap-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] bg-black/35 p-2 text-white shadow-lg shadow-black"
                                     >
                                         <div>
                                             <LiveMatchTopInfo
@@ -281,7 +328,7 @@ export default function Home() {
                                             />
                                         </div>
                                         {watchIndex === i && (
-                                            <div className="bg-[#f01e07] p-2 rounded-lg text-[8px] absolute top-[-15%] right-0 font-bold text-white">
+                                            <div className="absolute -top-3 right-0 rounded-lg bg-[#f01e07] px-2 py-1 text-[10px] font-bold text-white">
                                                 Watching
                                             </div>
                                         )}
@@ -297,10 +344,13 @@ export default function Home() {
                         </>
                     )}
                 </div>
-            </div>
+            </main>
             <OpenBets />
             {bet_results.length > 0 && (
-                <BetResultModal results={bet_results} onClose={dismiss_results} />
+                <BetResultModal
+                    results={bet_results}
+                    onClose={dismiss_results}
+                />
             )}
         </>
     );

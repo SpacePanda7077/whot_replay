@@ -42,7 +42,7 @@ export default function OpenBets() {
 
     return (
         <>
-            <div className="fixed top-[100%] p-2 rounded-tr-lg text-white/60 rounded-tl-lg bg-[#530237] border border-[#ffb800] w-full -translate-y-full">
+            <div className="fixed inset-x-0 bottom-0 z-40 rounded-tl-lg rounded-tr-lg border border-[#ffb800] bg-[#530237] p-2 text-white/60">
                 <div
                     onClick={() => setShow((prev) => !prev)}
                     className="flex w-full items-center justify-between "

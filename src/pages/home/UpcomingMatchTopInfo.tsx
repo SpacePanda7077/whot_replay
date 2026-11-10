@@ -62,8 +62,8 @@ export default function UpcomingMatchTopInfo({
     return (
         <>
             <div>
-                <div className="flex items-center justify-between">
-                    <div className="text-[10px] flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2 text-[10px]">
                         <div
                             style={{
                                 backgroundColor:

@@ -39,31 +39,36 @@ export default function Matches() {
 
     return (
         <>
-            <div className="w-full lg:w-[35%] flex flex-col gap-3 text-white/70">
+            {/*
+              Mobile: stacks under the rooms, list has a capped height.
+              Desktop: the column is exactly as tall as the game row; the
+              list takes the leftover space and scrolls, bet widget stays put.
+            */}
+            <div className="flex w-full min-w-0 flex-col gap-3 text-white/70 lg:h-full lg:min-h-0 lg:w-[35%] lg:max-w-[520px] lg:shrink-0">
                 {/* {live_replay && (
                     <LiveMatch id={live_replay.id} teams={live_replay.teams} />
                 )} */}
 
                 {isLoggedIn ? (
-                    <div className="flex flex-col gap-4 ">
+                    <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
                         {upcoming_replays && upcoming_replays.length > 0 ? (
-                            <div>
-                                <div className="flex gap-2 items-center">
+                            <div className="flex min-h-0 flex-col lg:flex-1">
+                                <div className="flex shrink-0 items-center gap-2">
                                     <h1
                                         onClick={() => setMatchType("SINGLE")}
-                                        className={`font-bold cursor-pointer ${matchType === "SINGLE" ? "bg-[#FFB800]/40 text-[#2E071B] rounded-tr-lg rounded-tl-lg border border-[#ffa400]" : "text-white"} p-1`}
+                                        className={`flex-1 cursor-pointer p-1 text-center text-xs font-bold sm:text-sm xl:text-base ${matchType === "SINGLE" ? "bg-[#FFB800]/40 text-[#2E071B] rounded-tr-lg rounded-tl-lg border border-[#ffa400]" : "text-white"}`}
                                     >
                                         Single Match Parley
                                     </h1>
                                     <h1
                                         onClick={() => setMatchType("MULTI")}
-                                        className={`font-bold cursor-pointer ${matchType === "MULTI" ? "bg-[#FFB800]/40 text-[#2E071B] rounded-tr-lg rounded-tl-lg border border-[#ffa400]" : "text-white"} p-1`}
+                                        className={`flex-1 cursor-pointer p-1 text-center text-xs font-bold sm:text-sm xl:text-base ${matchType === "MULTI" ? "bg-[#FFB800]/40 text-[#2E071B] rounded-tr-lg rounded-tl-lg border border-[#ffa400]" : "text-white"}`}
                                     >
                                         Multi Match Parleys
                                     </h1>
                                 </div>
                                 {matchType === "SINGLE" && (
-                                    <div className="shadow-lg shadow-black relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
+                                    <div className="custom-scrollbar relative flex max-h-[50vh] flex-col gap-3 overflow-y-auto rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] p-2 shadow-lg shadow-black lg:max-h-none lg:min-h-0 lg:flex-1">
                                         {upcoming_replays
                                             .filter(
                                                 (r) => r.status !== "locked",
@@ -90,7 +95,7 @@ export default function Matches() {
                                 )}
 
                                 {matchType === "MULTI" && (
-                                    <div className="shadow-lg shadow-black relative flex flex-col gap-3 max-h-[30vh] md:max-h-[55vh] md:min-h-[55vh] overflow-y-auto border border-[#ffa400] p-2 rounded-tr-lg rounded-br-lg rounded-bl-lg custom-scrollbar">
+                                    <div className="custom-scrollbar relative flex max-h-[50vh] flex-col gap-3 overflow-y-auto rounded-tr-lg rounded-br-lg rounded-bl-lg border border-[#ffa400] p-2 shadow-lg shadow-black lg:max-h-none lg:min-h-0 lg:flex-1">
                                         {accumulator_replays.map((m) => (
                                             <UpcomingAccumulator
                                                 key={m.id}
@@ -125,7 +130,7 @@ export default function Matches() {
                         />
                     </div>
                 ) : (
-                    <div className=" relative mb-20 flex flex-col gap-3">
+                    <div className="relative flex flex-col gap-3 lg:h-full lg:min-h-0 lg:overflow-hidden">
                         <NotLoggedIn />
                         {dummy_replay.map((m) => (
                             <UpcomingMatch

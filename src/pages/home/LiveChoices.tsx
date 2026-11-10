@@ -20,29 +20,29 @@ export default function LiveChoices({ id, teams, status }: Prop) {
 
     return (
         <div className="mt-2">
-            <div className="flex gap-4 items-center ">
+            <div className="flex items-center gap-2 sm:gap-4">
                 {sides.map((side, i) => (
                     <div key={side.key} className="contents">
-                        {i === 1 && <h2 className="text-white/30">VS</h2>}
+                        {i === 1 && <h2 className="shrink-0 text-white/30">VS</h2>}
                         <button
                             disabled={status === "scheduled"}
                             style={{
                                 opacity: status === "scheduled" ? 0.3 : 1,
                             }}
-                            className={` w-full flex justify-between items-center
+                            className={` w-full min-w-0 flex justify-between items-center
                                  p-1 border border-white/20 rounded-lg cursor-pointer
-                                
+
                                  `}
                         >
-                            <div className="flex items-center justify-between w-full ">
-                                <div className="flex items-center gap-2">
+                            <div className="flex w-full min-w-0 items-center justify-between gap-1">
+                                <div className="flex min-w-0 items-center gap-2">
                                     <div
-                                        className={`w-2 h-2 rounded-full ${side.dot}`}
+                                        className={`h-2 w-2 shrink-0 rounded-full ${side.dot}`}
                                     ></div>
-                                    <h1>{`${side.team.full_name.split(" ")[0]} `}</h1>
+                                    <h1 className="truncate">{`${side.team.full_name.split(" ")[0]} `}</h1>
                                 </div>
                                 {status === "open" && (
-                                    <p className="text-xs">
+                                    <p className="shrink-0 text-xs">
                                         {format_odds(odds?.[side.key])}
                                     </p>
                                 )}

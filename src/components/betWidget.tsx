@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Place_Bet, Place_Multi_Bet } from "../api/bet-api";
 import { useAuth } from "../store/auth-store";
 import { useCallback, useEffect, useState } from "react";
@@ -34,6 +34,15 @@ export default function BetWidget({
     const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
     const [msg, setMsg] = useState<string>("ERROR");
     const { getBetHistory, getAccumulatorBetHistory } = useFetchBets();
+    const queryClient = useQueryClient();
+
+    // A placed bet takes the stake out of the wallet, so re-run the wallet
+    // query that App.tsx keeps in the wallet store; the header balance updates
+    // when it finishes.
+    const refreshBalance = () => {
+        queryClient.invalidateQueries({ queryKey: ["get_wallet_info"] });
+    };
+
     const { mutate: placeSingleBet } = useMutation({
         mutationKey: ["place_bet_single"],
         mutationFn: (token: string) =>
@@ -49,6 +58,7 @@ export default function BetWidget({
                 setStatus("SUCCESS");
                 setShow(true);
                 getBetHistory();
+                refreshBalance();
             }
             console.log(data);
         },
@@ -91,6 +101,7 @@ export default function BetWidget({
                 setStatus("SUCCESS");
                 setShow(true);
                 getAccumulatorBetHistory();
+                refreshBalance();
             }
             console.log(data);
         },
@@ -154,13 +165,13 @@ export default function BetWidget({
         }
     }, [logs, matchType, choosenAccumulatorBet, choosenBet, betAmount]);
     return (
-        <div className="bg-[#2e071b] p-2 rounded-lg border border-[#FDC94B] shadow-lg shadow-black flex flex-col gap-2">
-            <div className="w-full flex items-end justify-between gap-2 p-2">
+        <div className="flex shrink-0 flex-col gap-2 rounded-lg border border-[#FDC94B] bg-[#2e071b] p-2 shadow-lg shadow-black">
+            <div className="grid w-full grid-cols-5 gap-1 p-1 sm:gap-2 sm:p-2">
                 {suggested_amount.map((amount, i) => (
                     <button
                         key={i}
                         onClick={() => setBetAmount(amount)}
-                        className={`w-full py-1 font-bold rounded-md ${amount === betAmount ? "bg-gradient-to-b from-[#4BD97A] to-[#2DA84E] " : "bg-gradient-to-b from-[#ffb800] to-[#F9B92D] border-b-4 border-b-[#B88A27]"} `}
+                        className={`min-w-0 whitespace-nowrap rounded-md py-1 text-xs font-bold sm:text-sm ${amount === betAmount ? "bg-gradient-to-b from-[#4BD97A] to-[#2DA84E] " : "bg-gradient-to-b from-[#ffb800] to-[#F9B92D] border-b-4 border-b-[#B88A27]"} `}
                     >
                         ₦ {formatNumber(amount)}
                     </button>
@@ -173,7 +184,7 @@ export default function BetWidget({
                 onChange={(e) => {
                     setBetAmount(Number(e.target.value));
                 }}
-                className={`w-full border  rounded-lg p-2 bg-[#030b11] text-[#FDC94B]`}
+                className="w-full min-w-0 rounded-lg border bg-[#030b11] p-2 text-[#FDC94B]"
             />
 
             <button
@@ -194,4 +205,3 @@ function formatNumber(num: number) {
 
     return num.toString();
 }
-
