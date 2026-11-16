@@ -54,11 +54,14 @@ export default function Home() {
         return () => setWatchIndex(0);
     }, [setWatchIndex]);
 
-    // Win / loss / refund popup once a watched game you bet on ends.
-    const { results: bet_results, dismiss: dismiss_results } = useBetResults();
-
     const currentGame = liveReplay?.[watchIndex];
     const game_id = currentGame?.id;
+
+    // Shows refund modal as soon as the game starts if the bet is already
+    // refunded (so the player doesn't watch a lopsided game thinking they
+    // can still win). Also shows normal won/lost/refund results on game end.
+    const { results: bet_results, dismiss: dismiss_results } =
+        useBetResults(game_id);
 
     // The scene run is usable for the selected game when it is the right
     // scene and is either unclaimed or already bound to this exact game.
@@ -355,3 +358,4 @@ export default function Home() {
         </>
     );
 }
+

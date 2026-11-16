@@ -1,19 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EventBus } from "../game/EventBus";
-import { bet, bet_key, is_accumulator, useHistoryStore } from "../store/history";
+import {
+    bet,
+    bet_key,
+    is_accumulator,
+    useHistoryStore,
+} from "../store/history";
 
-// Collects the outcome of the user's single bets on a game they were
-// watching, once that game's stream has ended. The outcome (won / lost /
-// refunded) always comes from the server's bet status, so refunds and
-// payouts are exact. If the server hasn't settled yet, the modal appears
-// as soon as the next bet refresh brings the result in.
-export function useBetResults() {
+// Shows the result modal for the user's single bets on a game.
+//
+// - As soon as the user starts watching a game that already has a
+//   "refunded" bet, the modal appears immediately (so they don't sit
+//   through a lopsided game thinking they can still win).
+// - When the stream ends, any newly settled won/lost/refunded bets
+//   on that game are also shown.
+export function useBetResults(currentGameId?: string | null) {
     const bets = useHistoryStore((s) => s.bets);
     const [ended_games, setEndedGames] = useState<string[]>([]);
     const [results, setResults] = useState<bet[]>([]);
     const announced = useRef(new Set<string>());
 
-    // The stream's "end" event only fires for the game being watched.
+    // Stream end → mark the game as finished so we can surface settled bets.
     useEffect(() => {
         const on_end = (d: { game_id: string }) => {
             const id = String(d.game_id);
@@ -25,8 +32,31 @@ export function useBetResults() {
         };
     }, []);
 
+    // 1) Immediate refund check: as soon as we are watching a game that
+    //    already has a refunded bet, show the modal right away.
+    useEffect(() => {
+        if (!currentGameId) return;
+
+        const already_refunded = bets.filter(
+            (b) =>
+                !is_accumulator(b) &&
+                !!b.game_id &&
+                String(b.game_id) === String(currentGameId) &&
+                b.status === "refunded" &&
+                !announced.current.has(bet_key(b)),
+        );
+
+        if (already_refunded.length === 0) return;
+
+        already_refunded.forEach((b) => announced.current.add(bet_key(b)));
+        setResults((prev) => [...prev, ...already_refunded]);
+    }, [bets, currentGameId]);
+
+    // 2) After the game ends, surface any settled (won / lost / refunded) bets
+    //    that we haven't already announced.
     useEffect(() => {
         if (ended_games.length === 0) return;
+
         const fresh = bets.filter(
             (b) =>
                 !is_accumulator(b) &&
@@ -35,7 +65,9 @@ export function useBetResults() {
                 b.status !== "placed" &&
                 !announced.current.has(bet_key(b)),
         );
+
         if (fresh.length === 0) return;
+
         fresh.forEach((b) => announced.current.add(bet_key(b)));
         setResults((prev) => [...prev, ...fresh]);
     }, [bets, ended_games]);
@@ -44,3 +76,4 @@ export function useBetResults() {
 
     return { results, dismiss };
 }
+
