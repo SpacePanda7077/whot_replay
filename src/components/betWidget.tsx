@@ -69,9 +69,11 @@ export default function BetWidget({
             const statusCode = err.response?.status || err.status;
 
             if (statusCode === 400) {
-                setMsg("INSUFFICIENT BALANCE OR INVALID BET");
+                setMsg("INVALID BET");
             } else if (statusCode === 409) {
                 setMsg("BET IS NOT OPEN");
+            } else if (statusCode === 402) {
+                setMsg("INSUFFICIENT BALANCE");
             } else {
                 setMsg("ERROR PLACING BET");
             }
@@ -112,9 +114,11 @@ export default function BetWidget({
             const statusCode = err.response?.status || err.status;
 
             if (statusCode === 400) {
-                setMsg("INSUFFICIENT BALANCE OR INVALID BET");
+                setMsg("INVALID BET");
             } else if (statusCode === 409) {
                 setMsg("BET IS NOT OPEN");
+            } else if (statusCode === 402) {
+                setMsg("INSUFFICIENT BALANCE");
             } else {
                 setMsg("ERROR PLACING BET");
             }
@@ -205,3 +209,4 @@ function formatNumber(num: number) {
 
     return num.toString();
 }
+
