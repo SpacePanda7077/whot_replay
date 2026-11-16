@@ -8,8 +8,6 @@ export default function PaymentMethodList({ setSelected }: Prop) {
         `paystack`,
         `marasoftpay`,
         `payaza`,
-        `nomba`,
-        `credo`,
         `crypto`,
         `palmpay`,
     ];
@@ -29,4 +27,3 @@ export default function PaymentMethodList({ setSelected }: Prop) {
         </>
     );
 }
-

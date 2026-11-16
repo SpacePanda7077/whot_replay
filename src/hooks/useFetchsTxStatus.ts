@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../store/auth-store";
-import { useMutation } from "@tanstack/react-query";
 import { DepositStatus } from "../api/wallet-api";
+
+// How long we keep polling before giving up (ms).
+const DEPOSIT_CHECK_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+// How often we poll the server.
+const POLL_INTERVAL_MS = 3000;
 
 export const useFetchTxStatus = () => {
     const logs = useAuth((s) => s.login_result);
@@ -12,27 +16,46 @@ export const useFetchTxStatus = () => {
     const [show, setShow] = useState(false);
     const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
     const [msg, setMsg] = useState<string>("ERROR");
-
-    const { mutate: checkDepositStatus } = useMutation({
-        mutationFn: (data: { token: string; reference: string }) =>
-            DepositStatus(data.token, data.reference),
-
-        onSuccess: (data) => {
-            console.log("Deposit status:", data.status);
-        },
-
-        onError: (err) => {
-            console.error("Failed to check deposit status", err);
-        },
-    });
+    // Seconds left until we stop checking (null when not checking).
+    const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
     useEffect(() => {
-        if (!depositReference || !logs?.token) return;
+        if (!depositReference || !logs?.token) {
+            setSecondsLeft(null);
+            return;
+        }
 
         let stopped = false;
-        let attempts = 0;
+        const startedAt = Date.now();
+
+        const finish = (nextMsg: string, nextStatus: "SUCCESS" | "ERROR") => {
+            if (stopped) return;
+            stopped = true;
+            setDepositReference(null);
+            setSecondsLeft(null);
+            setMsg(nextMsg);
+            setStatus(nextStatus);
+            setShow(true);
+        };
 
         const checkStatus = async () => {
+            if (stopped) return;
+
+            const elapsed = Date.now() - startedAt;
+            const remaining = Math.max(
+                0,
+                Math.ceil((DEPOSIT_CHECK_TIMEOUT_MS - elapsed) / 1000),
+            );
+            setSecondsLeft(remaining);
+
+            if (elapsed >= DEPOSIT_CHECK_TIMEOUT_MS) {
+                finish(
+                    "Deposit check timed out. If money left your account, contact support with your reference.",
+                    "ERROR",
+                );
+                return;
+            }
+
             try {
                 const response = await DepositStatus(
                     logs.token,
@@ -42,57 +65,48 @@ export const useFetchTxStatus = () => {
                 console.log("Deposit status:", response.status);
 
                 if (response.status === "success") {
-                    stopped = true;
-
-                    setMsg("DEPOSIT SUCCESSFUL");
-                    setStatus("SUCCESS");
-                    setShow(true);
-                    setDepositReference(null);
-
+                    finish("DEPOSIT SUCCESSFUL", "SUCCESS");
                     return;
                 }
 
                 if (response.status === "failed") {
-                    stopped = true;
-
-                    setMsg("DEPOSIT FAILED");
-                    setStatus("ERROR");
-                    setShow(true);
-                    setDepositReference(null);
-
+                    finish("DEPOSIT FAILED", "ERROR");
                     return;
                 }
-
-                // pending
-                attempts++;
-
-                // Stop after ~5 minutes
-                if (attempts >= 100) {
-                    stopped = true;
-                    setDepositReference(null);
-
-                    setMsg("DEPOSIT STATUS CHECK TIMED OUT");
-                    setStatus("ERROR");
-                    setShow(true);
-                }
+                // still pending → keep polling
             } catch (error) {
                 console.error("Error checking deposit:", error);
+                // network blip – keep trying until the overall timeout
             }
         };
 
-        // Check immediately
+        // Check immediately, then every few seconds.
         checkStatus();
+        const interval = setInterval(checkStatus, POLL_INTERVAL_MS);
 
-        // Then every 3 seconds
-        const interval = setInterval(() => {
-            if (!stopped) {
-                checkStatus();
+        // Also tick the countdown every second so the UI stays smooth.
+        const tick = setInterval(() => {
+            if (stopped) return;
+            const remaining = Math.max(
+                0,
+                Math.ceil(
+                    (DEPOSIT_CHECK_TIMEOUT_MS - (Date.now() - startedAt)) /
+                        1000,
+                ),
+            );
+            setSecondsLeft(remaining);
+            if (remaining <= 0) {
+                finish(
+                    "Deposit check timed out. If money left your account, contact support with your reference.",
+                    "ERROR",
+                );
             }
-        }, 3000);
+        }, 1000);
 
         return () => {
             stopped = true;
             clearInterval(interval);
+            clearInterval(tick);
         };
     }, [depositReference, logs?.token]);
 
@@ -105,6 +119,6 @@ export const useFetchTxStatus = () => {
         setMsg,
         setStatus,
         setShow,
+        secondsLeft,
     };
 };
-

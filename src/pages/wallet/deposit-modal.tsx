@@ -31,6 +31,7 @@ export default function DepositModal({ setOpen }: Prop) {
         setShow,
         setMsg,
         setStatus,
+        secondsLeft,
     } = useFetchTxStatus();
     const { mutate } = useMutation({
         mutationKey: ["deposit_funds"],
@@ -167,8 +168,7 @@ export default function DepositModal({ setOpen }: Prop) {
                 </div>
             </div>
             {show && <PopUpModal text={msg} type={status} setShow={setShow} />}
-            {depositReference && <LoadingState />}
+            {depositReference && <LoadingState secondsLeft={secondsLeft} />}
         </>
     );
 }
-
