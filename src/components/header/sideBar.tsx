@@ -6,12 +6,15 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../store/auth-store";
 import { useWalletStore } from "../../store/wallet-store";
+import { FaUser } from "react-icons/fa";
 
 export default function SideBar() {
     const navigate = useNavigate();
     const wallet = useWalletStore((s) => s.wallet);
 
     const isLoggedIn = useAuth((s) => s.isLoggedIn());
+    const info = useAuth((s) => s.login_result);
+    const logout = useAuth((s) => s.logout);
     return (
         <>
             <div className="fixed mt-20 left-0 top-0 w-fit h-auto flex flex-col gap-10 items-center py-4 px-4 border-b border-b-[#ffa500]/90 bg-[#2c071a] border border-[#FFB800] backdrop-blur-lg text-white z-1000">
@@ -38,18 +41,34 @@ export default function SideBar() {
                     </span>
                 </div>
                 {isLoggedIn && (
-                    <div className="flex lg:hidden items-center gap-5">
-                        <div className="flex gap-2 items-center bg-white/10 py-1 px-2 border font-bold border-white/20 rounded-lg">
-                            <CiWallet size={24} color="#FFB800" />
-                            {wallet?.balance.toLocaleString() || 0}
+                    <>
+                        <div className="flex lg:hidden items-center gap-5">
+                            <div className="flex gap-2 items-center bg-white/10 py-1 px-2 border font-bold border-white/20 rounded-lg">
+                                <CiWallet size={24} color="#FFB800" />
+                                {wallet?.balance.toLocaleString() || 0}
+                            </div>
+                            <button
+                                onClick={() => navigate("/wallet")}
+                                className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
+                            >
+                                wallet
+                            </button>
                         </div>
-                        <button
-                            onClick={() => navigate("/wallet")}
-                            className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
-                        >
-                            wallet
-                        </button>
-                    </div>
+                        <div className=" bg-[#2e071b]/60 flex flex-col gap-5 rounded-lg">
+                            <div className="font-bold flex gap-2 items-center">
+                                <div className="p-2">
+                                    <FaUser />
+                                </div>
+                                {info?.email || ""}
+                            </div>
+                            <button
+                                onClick={logout}
+                                className="bg-[#ffb800] p-2 text-[#2e071b] font-bold rounded-lg"
+                            >
+                                Logout
+                            </button>
+                        </div>{" "}
+                    </>
                 )}
                 {!isLoggedIn && (
                     <div className="flex lg:hidden items-center gap-5">

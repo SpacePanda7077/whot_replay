@@ -54,7 +54,7 @@ export default function UpcomingAccumulator({
 
     // Same card shell as UpcomingMatch, legs always visible (no Show toggle).
     return (
-        <div className="p-4 border border-[#ffa500]/20 rounded-lg shadow-md shadow-black">
+        <div className="p-4 border bg-black/50 border-[#ffa500]/20 rounded-lg shadow-md shadow-black">
             <UpcomingAccumulatorTopInfo
                 id={id}
                 status={status}
@@ -72,7 +72,8 @@ export default function UpcomingAccumulator({
                     teams={l.players}
                     disabled={!is_open}
                     leg_split={
-                        split?.find((s) => s.game_id === l.game_id) ?? split?.[i]
+                        split?.find((s) => s.game_id === l.game_id) ??
+                        split?.[i]
                     }
                     choosenBet={choosenBet}
                     setChoosenBet={setChoosenBet}
@@ -97,7 +98,7 @@ export default function UpcomingAccumulator({
                 )
             )}
 
-            <p className="mt-2 text-[10px] text-white/40">
+            <p className="mt-2 text-[10px] text-white/80 font-bold">
                 You must pick all {ACCUMULATOR_LEGS} matches. If any leg's split
                 is too lopsided when betting closes, the accumulator is voided
                 and all stakes are refunded.
@@ -105,3 +106,4 @@ export default function UpcomingAccumulator({
         </div>
     );
 }
+

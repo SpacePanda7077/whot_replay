@@ -49,12 +49,11 @@ export default function Choices({
     };
 
     const orange_percent =
-        status === "open"
-            ? orange_share(odds?.orange, odds?.blue)
-            : undefined;
+        status === "open" ? orange_share(odds?.orange, odds?.blue) : undefined;
     const lopsided =
         orange_percent !== undefined &&
-        (orange_percent > LOPSIDED_LIMIT || orange_percent < 100 - LOPSIDED_LIMIT);
+        (orange_percent > LOPSIDED_LIMIT ||
+            orange_percent < 100 - LOPSIDED_LIMIT);
 
     const sides = [
         { key: "orange", dot: "bg-orange-500", team: teams[0] },
@@ -66,7 +65,9 @@ export default function Choices({
             <div className="flex items-center gap-2 sm:gap-4">
                 {sides.map((side, i) => (
                     <div key={side.key} className="contents">
-                        {i === 1 && <h2 className="shrink-0 text-white/30">VS</h2>}
+                        {i === 1 && (
+                            <h2 className="shrink-0 text-white/30">VS</h2>
+                        )}
                         <button
                             disabled={status === "scheduled"}
                             onClick={() => handleBet(id, side.key)}
@@ -101,14 +102,15 @@ export default function Choices({
                 ))}
             </div>
 
-            {orange_percent !== undefined && (
+            {/* {orange_percent !== undefined && (
                 <SplitBar orange_percent={orange_percent} passed={!lopsided} />
-            )}
+            )} */}
 
-            <p className="mt-2 text-[10px] text-white/40">
+            <p className="mt-2 text-[10px] text-white/80 font-bold">
                 If this match's split is too lopsided when betting closes, the
                 match is voided and all stakes are refunded.
             </p>
         </div>
     );
 }
+

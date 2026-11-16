@@ -9,11 +9,15 @@ import SideBar from "./sideBar";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { useWalletStore } from "../../store/wallet-store";
+import { FaUser } from "react-icons/fa";
 
 export default function Header() {
     const navigate = useNavigate();
     const [sidebarOpen, setSideBarOpen] = useState(false);
+    const [show, setShow] = useState(false);
     const isLoggedIn = useAuth((s) => s.isLoggedIn());
+    const info = useAuth((s) => s.login_result);
+    const logout = useAuth((s) => s.logout);
     const wallet = useWalletStore((s) => s.wallet);
 
     return (
@@ -66,6 +70,29 @@ export default function Header() {
                             className="bg-[#ffb800] px-4 py-1 rounded-lg text-[#3B0526] font-bold"
                         >
                             Wallet
+                        </button>
+
+                        <button
+                            onClick={() => setShow((prev) => !prev)}
+                            className=" relative p-2 border-2 border-[#ffb800] rounded-full"
+                        >
+                            <FaUser color="#ffb800" />
+                            {show && (
+                                <div className="border border-[#ffb800]/50 absolute -translate-x-full mt-3 bg-[#2e071b]/60 p-2 flex flex-col gap-5 rounded-lg">
+                                    <div className="font-bold flex gap-2 items-center">
+                                        <div className="p-2">
+                                            <FaUser />
+                                        </div>
+                                        {info?.email || ""}
+                                    </div>
+                                    <button
+                                        onClick={logout}
+                                        className="bg-[#ffb800] p-2 text-[#2e071b] font-bold rounded-lg"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
                         </button>
                     </div>
                 )}

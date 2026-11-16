@@ -34,7 +34,7 @@ export default function UpcomingMatch({
 }: Prop) {
     return (
         <>
-            <div className="shrink-0 rounded-lg border border-[#ffa500]/20 p-3 shadow-md shadow-black sm:p-4">
+            <div className="shrink-0 bg-black/50 rounded-lg border border-[#ffa500]/20 p-3 shadow-md shadow-black sm:p-4">
                 <UpcomingMatchTopInfo
                     id={id}
                     status={status}
@@ -52,3 +52,4 @@ export default function UpcomingMatch({
         </>
     );
 }
+
