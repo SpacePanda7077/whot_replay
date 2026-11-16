@@ -23,6 +23,13 @@ export const LogIn = async (data: { email: string; password: string }) => {
     return res.data;
 };
 
+export const SigninWithSocials = async (data: { id_token: string }) => {
+    const res = await axios.post(`${ENDPOINT}/api/auth/social`, data, {
+        headers: { "Content-Type": "application/json" },
+    });
+    return res.data;
+};
+
 export const SignInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const auth = getAuth(firebaseApp);
@@ -90,4 +97,3 @@ export const SigninWithapple = async () => {
             // ...
         });
 };
-

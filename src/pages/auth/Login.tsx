@@ -7,9 +7,18 @@ import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { FcGoogle } from "react-icons/fc";
 import { ImAppleinc } from "react-icons/im";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Login() {
     const navigate = useNavigate();
+    const {
+        isLoading,
+        isAuthenticated,
+        error: authError,
+        user,
+        loginWithRedirect,
+        logout,
+    } = useAuth0();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,6 +29,14 @@ export default function Login() {
     });
 
     const setLogin = useAuth((s) => s.setLoginResult);
+
+    const handle_onclick_login = (connection: "apple" | "google-oauth2") => {
+        loginWithRedirect({
+            authorizationParams: {
+                connection: connection,
+            },
+        });
+    };
 
     const handle_login = (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -102,7 +119,7 @@ export default function Login() {
                             type="button"
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
-                                SignInWithGoogle();
+                                handle_onclick_login("google-oauth2");
                             }}
                             className="bg-gray-100 w-full text-[#2E071B] rounded-lg p-2 font-bold text-lg mt-4 flex items-center justify-center gap-3"
                         >
@@ -114,7 +131,7 @@ export default function Login() {
                             type="button"
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
-                                SigninWithapple();
+                                handle_onclick_login("apple");
                             }}
                             className="bg-[#34A1EB] w-full text-white rounded-lg p-2 font-bold text-lg mt-4 flex items-center justify-center gap-3"
                         >
@@ -178,4 +195,3 @@ export default function Login() {
 function isEmail(text: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
 }
-

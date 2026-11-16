@@ -27,6 +27,8 @@
     "build-nolog": "vite build --config vite/config.prod.mjs"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.30.0",
+    "@auth0/auth0-spa-js": "^2.30.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.102.8",
     "axios": "^1.20.0",
@@ -52,9 +54,9 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "terser": "^5.28.1",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "^6.3.1",
-    "terser": "^5.28.1"
+    "vite": "^6.3.1"
   }
 }

@@ -7,6 +7,7 @@ import CountryList from "../../components/info/country-list";
 import { motion } from "motion/react";
 import { FcGoogle } from "react-icons/fc";
 import { ImAppleinc } from "react-icons/im";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -83,6 +84,14 @@ export default function Register() {
             toast.error(error.message);
         }
     }, [data, error]);
+    const { loginWithRedirect } = useAuth0();
+    const handle_onclick_login = (connection: "apple" | "google-oauth2") => {
+        loginWithRedirect({
+            authorizationParams: {
+                connection: connection,
+            },
+        });
+    };
 
     return (
         <>
@@ -123,7 +132,7 @@ export default function Register() {
                             type="button"
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
-                                // SignInWithGoogle();
+                                handle_onclick_login("google-oauth2");
                             }}
                             className="bg-gray-100 w-full text-[#2E071B] rounded-lg p-2 font-bold text-lg mt-4 flex items-center justify-center gap-3"
                         >
@@ -135,7 +144,7 @@ export default function Register() {
                             type="button"
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
-                                // SigninWithapple();
+                                handle_onclick_login("apple");
                             }}
                             className="bg-[#34A1EB] w-full text-white rounded-lg p-2 font-bold text-lg mt-4 flex items-center justify-center gap-3"
                         >
@@ -239,4 +248,3 @@ export default function Register() {
 function isEmail(text: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
 }
-
