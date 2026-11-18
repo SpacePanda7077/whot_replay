@@ -1,5 +1,20 @@
 import { create } from "zustand";
-
+type Players = [
+    {
+        player_index: 0;
+        userid: string;
+        full_name: string;
+        avatar: string;
+        team: string;
+    },
+    {
+        player_index: 1;
+        userid: string;
+        full_name: string;
+        avatar: string;
+        team: string;
+    },
+];
 export type bet = {
     amount: number;
     createdtime: string;
@@ -10,8 +25,10 @@ export type bet = {
     f_status: "placed" | "in match" | "settled";
     // Single bets (GET /api/bets)
     game_id?: string;
+
     team?: string;
     // Accumulator bets (GET /api/accumulators/bets)
+    players?: Players;
     accumulator_id?: string;
     combo?: string;
 };

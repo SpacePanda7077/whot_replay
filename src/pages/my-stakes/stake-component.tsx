@@ -55,7 +55,9 @@ export default function StakeComponent({ bet }: Prop) {
                             </div>
                         ) : (
                             <p className="font-semibold capitalize">
-                                Team {bet.team}
+                                {bet.team === "orange"
+                                    ? bet.players![0].full_name
+                                    : bet.players![1].full_name}
                             </p>
                         )}
                         <p className="text-xs">
@@ -98,3 +100,4 @@ function formatTimeAgo(timestamp: string): string {
     }
     return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
 }
+
