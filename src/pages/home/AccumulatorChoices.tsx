@@ -63,9 +63,7 @@ export default function AccumulatorChoices({
 
     return (
         <div className="mt-2">
-            <p className="text-[10px] text-white/50 mb-1">
-                Match {index + 1}
-            </p>
+            <p className="text-[10px] text-white/50 mb-1">Match {index + 1}</p>
             <div className="flex gap-4 items-center ">
                 {sides.map((side, i) => (
                     <div key={side.key} className="contents">
@@ -97,12 +95,13 @@ export default function AccumulatorChoices({
                 ))}
             </div>
 
-            {has_split && leg_split && (
+            {/* {has_split && leg_split && (
                 <SplitBar
                     orange_percent={orange_pct}
                     passed={leg_split.passed}
                 />
-            )}
+            )} */}
         </div>
     );
 }
+

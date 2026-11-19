@@ -25,6 +25,7 @@ export type replay = {
     starts_at: string;
     ends_at: string;
     players: Players;
+    ended: boolean;
 };
 
 export type accumulator = {
@@ -161,6 +162,7 @@ const make_replay = (id: string): replay => ({
     starts_at: "2026-09-10T12:00:00Z",
     ends_at: "2026-09-10T12:02:00Z",
     players: make_players(),
+    ended: true,
 });
 
 export const dummy_replay: replay[] = [

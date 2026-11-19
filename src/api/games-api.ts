@@ -2,6 +2,7 @@ import axios from "axios";
 import { ENDPOINT } from "./glogal-api";
 import { EventBus } from "../game/EventBus";
 import { useHistoryStore } from "../store/history";
+import { useReplayStore } from "../store/replay.store";
 
 export const GetAccumulatorReplays = async () => {
     const res = await axios.get(`${ENDPOINT}/api/accumulators`);
@@ -41,6 +42,11 @@ export const streamGame = (id: string) => {
         // useLiveSlots listens for this to replace the finished game.
         EventBus.emit("game_end", JSON.parse((e as MessageEvent).data));
         console.log("Game end");
+        const livereplay = useReplayStore.getState().live_replay;
+        for (const replay of livereplay) {
+            replay.ended = true;
+        }
+        useReplayStore.getState().setLiveReplay(livereplay);
         const { refetch, setRefetch } = useHistoryStore.getState();
         setRefetch(refetch + 1);
         es.close();

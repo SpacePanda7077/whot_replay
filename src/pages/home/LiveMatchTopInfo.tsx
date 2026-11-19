@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 interface Prop {
     id: string;
     status: string;
+    ended: boolean;
 }
 
-export default function LiveMatchTopInfo({ id, status }: Prop) {
+export default function LiveMatchTopInfo({ id, status, ended }: Prop) {
     return (
         <>
             <div>
@@ -21,7 +22,7 @@ export default function LiveMatchTopInfo({ id, status }: Prop) {
                             }}
                             className="flex gap-2 items-center w-fit py-1 px-2 rounded-lg font-bold"
                         >
-                            <p>currently playing</p>
+                            <p>{ended ? "Ended" : "Currently Playing"}</p>
                         </div>
                         <p className="text-white/70">#{id}</p>
                     </div>

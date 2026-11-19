@@ -76,3 +76,9 @@ export const Get_Accumulator_Bets = async (token: string) => {
 
     return res;
 };
+
+export const Get_Slip_Bets = async (code: string) => {
+    const res = await axios.get(`${ENDPOINT} /api/slips/${code}`);
+
+    return res;
+};

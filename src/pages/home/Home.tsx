@@ -231,6 +231,9 @@ export default function Home() {
                                                             liveReplay[i]
                                                                 ?.status
                                                         }
+                                                        ended={
+                                                            liveReplay[i].ended
+                                                        }
                                                     />
                                                     <LiveChoices
                                                         id={liveReplay[i]?.id}
@@ -323,6 +326,7 @@ export default function Home() {
                                             <LiveMatchTopInfo
                                                 id={liveReplay[i]?.id}
                                                 status={liveReplay[i]?.status}
+                                                ended={liveReplay[i].ended}
                                             />
                                             <LiveChoices
                                                 id={liveReplay[i]?.id}

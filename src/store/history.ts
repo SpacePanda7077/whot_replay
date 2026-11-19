@@ -1,20 +1,20 @@
 import { create } from "zustand";
-type Players = [
-    {
-        player_index: 0;
-        userid: string;
+type Players = {
+    player_index: 0;
+    userid: string;
+    full_name: string;
+    avatar: string;
+    team: string;
+};
+
+type leg = {
+    game_id: string;
+    player: {
         full_name: string;
-        avatar: string;
-        team: string;
-    },
-    {
-        player_index: 1;
-        userid: string;
-        full_name: string;
-        avatar: string;
-        team: string;
-    },
-];
+        player_index: number;
+    };
+};
+
 export type bet = {
     amount: number;
     createdtime: string;
@@ -28,9 +28,10 @@ export type bet = {
 
     team?: string;
     // Accumulator bets (GET /api/accumulators/bets)
-    players?: Players;
+    player?: Players;
     accumulator_id?: string;
     combo?: string;
+    legs: leg[];
 };
 
 type bet_history = {

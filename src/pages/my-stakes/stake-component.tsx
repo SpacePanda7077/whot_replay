@@ -1,5 +1,7 @@
+import { FaCopy } from "react-icons/fa";
 import { bet, is_accumulator } from "../../store/history";
 import { useDisplayStatus } from "./bet-status";
+import { useState } from "react";
 
 interface Prop {
     bet: bet;
@@ -21,6 +23,24 @@ const STATUS_STYLE: Record<string, string> = {
 export default function StakeComponent({ bet }: Prop) {
     const acc = is_accumulator(bet);
     const status = useDisplayStatus(bet);
+    const [copied, setCopied] = useState(false);
+    const [color, setColor] = useState("white");
+
+    const copy_slip = async (slip: string) => {
+        try {
+            await navigator.clipboard.writeText(slip);
+            setCopied(true);
+            setColor("#FFB800");
+
+            // Reset the button text after 2 seconds
+            setTimeout(() => {
+                setCopied(false);
+                setColor("white");
+            }, 2000);
+        } catch (err) {
+            console.error("Failed to copy text:", err);
+        }
+    };
 
     return (
         <div className="flex flex-col gap-2 bg-[#2E041D] p-4 rounded-lg border border-[#FFB800]/20">
@@ -36,28 +56,36 @@ export default function StakeComponent({ bet }: Prop) {
             </div>
             <div className="flex items-center justify-between border-b border-b-white/20 pb-4">
                 <div className="flex gap-2 items-center">
-                    <div
-                        className={`w-2 h-2 rounded-full ${
-                            !acc && bet.team === "blue"
-                                ? "bg-blue-500"
-                                : "bg-orange-500"
-                        }`}
-                    ></div>
                     <div>
                         {acc && bet.combo ? (
                             <div className="flex gap-2 items-center">
-                                teams :{" "}
-                                {bet.combo.split("").map((t, i) => (
-                                    <p key={i} className="font-semibold">
-                                        {TEAM_NAMES[t] ?? t}
+                                players :{" "}
+                                {bet.legs.map((t, i) => (
+                                    <p
+                                        style={{
+                                            backgroundColor:
+                                                t.player?.player_index === 0
+                                                    ? "orange"
+                                                    : "#0AB2C4",
+                                        }}
+                                        key={i}
+                                        className="font-semibold p-1 rounded-lg text-[#2E041D]"
+                                    >
+                                        {t.player.full_name}
                                     </p>
                                 ))}
                             </div>
                         ) : (
-                            <p className="font-semibold capitalize">
-                                {bet.team === "orange"
-                                    ? bet.players![0].full_name
-                                    : bet.players![1].full_name}
+                            <p
+                                style={{
+                                    backgroundColor:
+                                        bet.player?.player_index === 0
+                                            ? "orange"
+                                            : "#0AB2C4",
+                                }}
+                                className="font-semibold capitalize w-fit p-1 rounded-lg text-[#2E041D] "
+                            >
+                                {bet.player!.full_name}
                             </p>
                         )}
                         <p className="text-xs">
@@ -77,7 +105,13 @@ export default function StakeComponent({ bet }: Prop) {
 
             <div className="flex justify-between items-center text-xs">
                 <p>game id : {bet.game_id || bet.accumulator_id}</p>
-                <p>slip code : {bet.slip_code}</p>
+                <div className="flex items-center gap-2">
+                    slip code : {bet.slip_code}{" "}
+                    <FaCopy
+                        color={color}
+                        onClick={() => copy_slip(bet.slip_code)}
+                    />
+                </div>
             </div>
         </div>
     );
