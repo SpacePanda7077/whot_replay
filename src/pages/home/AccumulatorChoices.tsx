@@ -47,7 +47,10 @@ export default function AccumulatorChoices({
                 { length: leg_count },
                 (_, i) => base[i] ?? "",
             );
-            combo[index] = side;
+            // Clicking the already-selected side on this leg clears it
+            combo[index] = combo[index] === side ? "" : side;
+            // Nothing picked anywhere -> back to the empty state
+            if (combo.every((c) => !c)) return { game_id: "", combo: [] };
             return { game_id: id, combo };
         });
     };
@@ -64,15 +67,17 @@ export default function AccumulatorChoices({
     return (
         <div className="mt-2">
             <p className="text-[10px] text-white/50 mb-1">Match {index + 1}</p>
-            <div className="flex gap-4 items-center ">
+            <div className="flex items-center gap-2 sm:gap-4">
                 {sides.map((side, i) => (
                     <div key={side.key} className="contents">
-                        {i === 1 && <h2 className="text-white/30">VS</h2>}
+                        {i === 1 && (
+                            <h2 className="shrink-0 text-white/30">VS</h2>
+                        )}
                         <button
                             disabled={disabled}
                             onClick={() => handleBet(side.key)}
                             style={{ opacity: disabled ? 0.3 : 1 }}
-                            className={` w-full flex justify-between items-center
+                            className={` w-full min-w-0 flex justify-between items-center
                                  p-1 border border-white/20 rounded-lg cursor-pointer
                                  ${
                                      choosenBet.game_id === id &&
@@ -82,12 +87,12 @@ export default function AccumulatorChoices({
                                  }
                                  `}
                         >
-                            <div className="flex items-center justify-between w-full ">
-                                <div className="flex items-center gap-2">
+                            <div className="flex w-full min-w-0 items-center justify-between gap-1">
+                                <div className="flex min-w-0 items-center gap-2">
                                     <div
-                                        className={`w-2 h-2 rounded-full ${side.dot}`}
+                                        className={`h-2 w-2 shrink-0 rounded-full ${side.dot}`}
                                     ></div>
-                                    <h1>{`${side.team.full_name.split(" ")[0]} `}</h1>
+                                    <h1 className="truncate">{`${side.team.full_name.split(" ")[0]} `}</h1>
                                 </div>
                             </div>
                         </button>
@@ -104,4 +109,3 @@ export default function AccumulatorChoices({
         </div>
     );
 }
-

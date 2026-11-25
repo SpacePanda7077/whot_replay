@@ -81,3 +81,13 @@ export const DepositStatus = async (token: string, reference: string) => {
 
     return res.data;
 };
+
+export const GetBanks = async (token: string) => {
+    const res = await axios.get(`${ENDPOINT}/api/wallet/banks`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return res;
+};

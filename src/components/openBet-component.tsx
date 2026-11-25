@@ -8,15 +8,28 @@ import { useEffect, useMemo, useState } from "react";
 import { get_odds, useAllOdds } from "../hooks/useOdds";
 
 import OpenBet from "./openbet";
-import { useQuery } from "@tanstack/react-query";
-import { Get_Slip_Bets } from "../api/bet-api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Get_Slip_Bets, Place_Multi_Bet } from "../api/bet-api";
+import { useAuth } from "../store/auth-store";
+import { useFetchBets } from "../hooks/useFetchBets";
+import PopUpModal from "./popup-modal";
 
 export default function OpenBets() {
     const betHistory = useHistoryStore((s) => s.bets);
+    const logs = useAuth((s) => s.login_result);
     const odds = useAllOdds();
     const [show, setShow] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
+    const [msg, setMsg] = useState<string>("ERROR");
     const [code, setCode] = useState<string>("");
     const [serach, setSearch] = useState(false);
+
+    const { getBetHistory } = useFetchBets();
+    const queryClient = useQueryClient();
+    const refreshBalance = () => {
+        queryClient.invalidateQueries({ queryKey: ["get_wallet_info"] });
+    };
 
     const { data: betslip, error: betSlipError } = useQuery({
         queryKey: ["get_bets_from_slip"],
@@ -34,16 +47,71 @@ export default function OpenBets() {
         [openBets],
     );
 
+    const { mutate } = useMutation({
+        mutationKey: ["copy_bets_data"],
+        mutationFn: (data: {
+            token: string;
+            data: {
+                accumulator_id: string;
+                combo: string;
+                amount: number;
+                slip_code?: string;
+            };
+        }) => Place_Multi_Bet(data.token, data.data),
+        onSuccess: (data) => {
+            // If your API function returns the response object containing status
+            if (data?.status === 200 || data?.status === 201) {
+                setMsg("BET PLACED SUCCESSFULLY");
+                setStatus("SUCCESS");
+                setShowModal(true);
+                getBetHistory();
+                refreshBalance();
+            }
+            console.log(data);
+        },
+        onError: (err: any) => {
+            console.error(err);
+
+            // Extract status from Axios error or custom thrown error
+            const statusCode = err.response?.status || err.status;
+
+            if (statusCode === 400) {
+                setMsg("INVALID BET");
+            } else if (statusCode === 409) {
+                setMsg("BET IS NOT OPEN");
+            } else if (statusCode === 402) {
+                setMsg("INSUFFICIENT BALANCE");
+            } else {
+                setMsg("ERROR PLACING BET");
+            }
+
+            setStatus("ERROR");
+            setShowModal(true);
+        },
+    });
+
     useEffect(() => {
+        if (!logs) return;
         if (betslip) {
             console.log(betslip);
+            for (const bet of betslip.data.accumulator_bets) {
+                mutate({
+                    token: logs.token,
+                    data: {
+                        accumulator_id: bet.accumulator_id,
+                        combo: bet.combo,
+                        amount: bet.amount,
+                    },
+                });
+            }
+
             setSearch(false);
         }
         if (betSlipError) {
             console.log(betSlipError);
             setSearch(false);
         }
-    }, [betslip, betSlipError]);
+    }, [betslip, betSlipError, logs]);
 
     // Total return if every open bet wins: sum of amount * current odds.
     // Bets with no odds yet are skipped and flagged so we can show "~".
@@ -116,6 +184,13 @@ export default function OpenBets() {
                             </button>
                         </div>
                     </div>
+                )}
+                {showModal && (
+                    <PopUpModal
+                        text={msg}
+                        type={status}
+                        setShow={setShowModal}
+                    />
                 )}
             </div>
         </>

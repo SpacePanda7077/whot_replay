@@ -81,6 +81,7 @@ export default function Login() {
 
         if (error) {
             toast.error(error.message);
+            console.log(error.message);
         }
     }, [data, error, navigate, setLogin]);
 

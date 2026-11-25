@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
-import BankList from "./BankList";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import PaymentMethodList from "./PaymentMethodList";
 import { useAuth } from "../../store/auth-store";
-import { useMutation } from "@tanstack/react-query";
-import { SetWallet, Withdraw } from "../../api/wallet-api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { GetBanks, SetWallet, Withdraw } from "../../api/wallet-api";
 import PopUpModal from "../../components/popup-modal";
 import { useWalletStore } from "../../store/wallet-store";
 
@@ -12,11 +12,11 @@ interface Prop {
 }
 
 export default function WithdrawalModal({ setOpen, refetch }: Prop) {
-    const [accountName, setAccountName] = useState<string>();
-    const [accountNumber, setAccountNumber] = useState<string>();
+    const [accountName, setAccountName] = useState<string>("");
+    const [accountNumber, setAccountNumber] = useState<string>("");
     const [amount, setAmount] = useState<number>();
     const [bankSelectionOpen, setBankSelectionOpen] = useState(false);
-    const [selectedBank, setSelectedBank] = useState("Select Bank");
+    const [selectedBank, setSelectedBank] = useState("");
     const wallet = useWalletStore((s) => s.wallet);
 
     const logs = useAuth((s) => s.login_result);
@@ -24,12 +24,42 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
     const [status, setStatus] = useState<"SUCCESS" | "ERROR">("ERROR");
     const [msg, setMsg] = useState<string>("ERROR");
 
+    const { data: Banks, error: GetBanksError } = useQuery({
+        queryKey: ["get_bank_list"],
+        queryFn: () => GetBanks(logs?.token!),
+        enabled: logs !== null,
+    });
+
+    const banks: { name: string; code: string }[] = useMemo(
+        () => Banks?.data?.banks ?? [],
+        [Banks],
+    );
+
+    useEffect(() => {
+        if (GetBanksError) {
+            console.log(GetBanksError);
+        }
+    }, [GetBanksError]);
+
+    // Banks matching what's typed; names starting with the query come first
+    const filteredBanks = useMemo(() => {
+        const q = selectedBank.trim().toLowerCase();
+        if (!q) return banks;
+
+        return banks
+            .filter((b) => b.name.toLowerCase().includes(q))
+            .sort((a, b) => {
+                const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+                const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+                return aStarts - bStarts;
+            });
+    }, [banks, selectedBank]);
+
     const { mutate: withdraw } = useMutation({
         mutationKey: ["deposit_funds"],
         mutationFn: (data: { token: string; data: { amount: number } }) =>
             Withdraw(data.token, data.data),
         onSuccess: (data) => {
-            // If your API function returns the response object containing status
             if (data?.status === 200 || data?.status === 201) {
                 setMsg("DEPOSIT SUCCESSFULLY");
                 setStatus("SUCCESS");
@@ -40,7 +70,6 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
         onError: (err: any) => {
             console.error(err);
 
-            // Extract status from Axios error or custom thrown error
             const statusCode = err.response?.status || err.status;
 
             if (statusCode === 400) {
@@ -69,7 +98,6 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
             };
         }) => SetWallet(data.token, data.data),
         onSuccess: (data) => {
-            // If your API function returns the response object containing status
             if (data?.status === 200 || data?.status === 201) {
                 setMsg("ACCOUNT SET SUCCESSFULLY");
                 setStatus("SUCCESS");
@@ -81,7 +109,6 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
         onError: (err: any) => {
             console.error(err);
 
-            // Extract status from Axios error or custom thrown error
             const statusCode = err.response?.status || err.status;
 
             if (statusCode === 400) {
@@ -97,18 +124,19 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
         },
     });
 
-    // 💡 You can now delete the entire useEffect hook!
-
     const handleWithdraw = useCallback(() => {
         if (!logs || !amount || amount <= 0) return;
         withdraw({
             token: logs.token,
             data: { amount: amount },
         });
-    }, [logs, amount]);
+    }, [logs, amount, withdraw]);
 
     const handleSetAccount = useCallback(() => {
         if (!logs || !accountName || !accountNumber || !selectedBank) return;
+        // Only allow a bank that actually exists in the list
+        if (!banks.some((b) => b.name === selectedBank)) return;
+
         console.log("Setting account ...");
         set_account({
             token: logs.token,
@@ -118,15 +146,16 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                 bank_name: selectedBank,
             },
         });
-    }, [logs, accountName, accountNumber, selectedBank]);
+    }, [logs, accountName, accountNumber, selectedBank, banks, set_account]);
 
     useEffect(() => {
-        if (wallet) {
-            setAccountName(wallet.withdrawal_account.account_name);
-            setAccountNumber(wallet.withdrawal_account.account_number);
-            setSelectedBank(wallet.withdrawal_account.bank_name);
+        if (wallet?.withdrawal_account) {
+            setAccountName(wallet.withdrawal_account.account_name ?? "");
+            setAccountNumber(wallet.withdrawal_account.account_number ?? "");
+            setSelectedBank(wallet.withdrawal_account.bank_name ?? "");
         }
     }, [wallet]);
+
     return (
         <>
             <div className="z-50 mt-10 fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center  backdrop-blur-lg">
@@ -157,15 +186,27 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                         </div>
                         <div className="flex flex-col">
                             <label>Bank Name</label>
-                            <div
-                                onClick={() =>
-                                    setBankSelectionOpen((prev) => !prev)
-                                }
-                                className="relative bg-white/5 w-1/2 h-10 p-2 rounded text-white font-bold placeholder:text-white/40"
-                            >
-                                {selectedBank}
+                            <div className="relative bg-white/5 w-1/2 h-10 p-2 rounded text-white font-bold">
+                                <input
+                                    type="text"
+                                    value={selectedBank}
+                                    placeholder="Select Bank"
+                                    onFocus={() => setBankSelectionOpen(true)}
+                                    onBlur={() => setBankSelectionOpen(false)}
+                                    onChange={(e) => {
+                                        setSelectedBank(e.target.value);
+                                        setBankSelectionOpen(true);
+                                    }}
+                                    className="w-full h-full outline-none placeholder:text-white/40"
+                                />
                                 {bankSelectionOpen && (
-                                    <BankList setSelected={setSelectedBank} />
+                                    <PaymentMethodList
+                                        setSelected={setSelectedBank}
+                                        onPick={() =>
+                                            setBankSelectionOpen(false)
+                                        }
+                                        bankList={filteredBanks}
+                                    />
                                 )}
                             </div>
                         </div>
@@ -177,7 +218,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                             <input
                                 type="text"
                                 placeholder="Enter Amount"
-                                value={amount}
+                                value={amount ?? ""}
                                 onChange={(e) =>
                                     setAmount(Number(e.target.value))
                                 }
@@ -191,7 +232,9 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                             >
                                 Cancel
                             </button>
-                            {wallet?.withdrawal_account.account_number ? (
+                            {wallet?.withdrawal_account.account_number &&
+                            accountNumber ===
+                                wallet.withdrawal_account.account_number ? (
                                 <button
                                     onClick={handleWithdraw}
                                     className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80"
@@ -214,4 +257,3 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
         </>
     );
 }
-

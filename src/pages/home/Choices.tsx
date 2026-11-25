@@ -45,7 +45,12 @@ export default function Choices({
     const odds = useGameOdds(id);
 
     const handleBet = (game_id: string, team: string) => {
-        setChoosenBet({ game_id, team });
+        setChoosenBet((prev) =>
+            // Clicking the already-selected side clears the selection
+            prev.game_id === game_id && prev.team === team
+                ? { game_id: "", team: "" }
+                : { game_id, team },
+        );
     };
 
     const orange_percent =
@@ -113,4 +118,3 @@ export default function Choices({
         </div>
     );
 }
-

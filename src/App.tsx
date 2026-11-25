@@ -117,6 +117,7 @@ function App() {
         }
         if (error) {
             console.log(error);
+            console.log(error.message);
         }
     }, [AuthData, error]);
 

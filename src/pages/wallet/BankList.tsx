@@ -4,21 +4,14 @@ interface Prop {
 
 export default function BankList({ setSelected }: Prop) {
     const BankList = [
-        "Select Bank",
-        "Access Bank",
-        "Eco Bank",
-        "Fidelity Bank",
-        "First Bank",
-        "Guaranty Trust bank",
-        "Heritage Bank",
-        "KeyStone Bank",
-        "Stanbic Bank",
-        "Sterling Bank",
-        "UBA",
-        "Union Bank",
-        "Unity Bank",
-        "Wema Bank",
-        "Zenith Bank",
+        `opay`,
+        `paystack`,
+        `marasoftpay`,
+        `payaza`,
+        `nomba`,
+        `credo`,
+        `crypto`,
+        `palmpay`,
     ];
     return (
         <>
@@ -36,4 +29,3 @@ export default function BankList({ setSelected }: Prop) {
         </>
     );
 }
-

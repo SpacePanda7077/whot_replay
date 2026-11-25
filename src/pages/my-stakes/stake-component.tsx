@@ -105,13 +105,15 @@ export default function StakeComponent({ bet }: Prop) {
 
             <div className="flex justify-between items-center text-xs">
                 <p>game id : {bet.game_id || bet.accumulator_id}</p>
-                <div className="flex items-center gap-2">
-                    slip code : {bet.slip_code}{" "}
-                    <FaCopy
-                        color={color}
-                        onClick={() => copy_slip(bet.slip_code)}
-                    />
-                </div>
+                {acc && bet.combo && (
+                    <div className="flex items-center gap-2">
+                        slip code : {bet.slip_code}{" "}
+                        <FaCopy
+                            color={color}
+                            onClick={() => copy_slip(bet.slip_code)}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

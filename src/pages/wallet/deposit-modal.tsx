@@ -6,6 +6,7 @@ import { Deposit } from "../../api/wallet-api";
 import PopUpModal from "../../components/popup-modal";
 import { useFetchTxStatus } from "../../hooks/useFetchsTxStatus";
 import LoadingState from "../../components/Loader";
+import BankList from "./BankList";
 
 interface Prop {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -128,7 +129,7 @@ export default function DepositModal({ setOpen }: Prop) {
                                 >
                                     {selectedMethod}
                                     {paymentMethodSelectionOpen && (
-                                        <PaymentMethodList
+                                        <BankList
                                             setSelected={setSelectedMethod}
                                         />
                                     )}

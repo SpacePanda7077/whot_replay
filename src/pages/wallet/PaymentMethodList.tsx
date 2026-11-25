@@ -1,29 +1,35 @@
 interface Prop {
     setSelected: React.Dispatch<React.SetStateAction<string>>;
+    onPick: () => void;
+    bankList: { name: string; code: string }[];
 }
 
-export default function PaymentMethodList({ setSelected }: Prop) {
-    const BankList = [
-        `opay`,
-        `paystack`,
-        `marasoftpay`,
-        `payaza`,
-        `crypto`,
-        `palmpay`,
-    ];
+export default function PaymentMethodList({
+    setSelected,
+    onPick,
+    bankList,
+}: Prop) {
     return (
-        <>
-            <div className="absolute bg-[#370723] w-full max-h-50 overflow-y-auto p-2 border border-[#FFB800]/20">
-                {BankList.map((bank, index) => (
+        <div className="absolute z-10 left-0 top-full bg-[#370723] w-full max-h-50 overflow-y-auto p-2 border border-[#FFB800]/20">
+            {bankList.length === 0 ? (
+                <div className="text-white/50">No banks found</div>
+            ) : (
+                bankList.map((bank, i) => (
                     <div
-                        onClick={() => setSelected(bank)}
-                        className="cursor-pointer"
-                        key={index}
+                        key={i}
+                        // onMouseDown fires before the input's onBlur,
+                        // so the click isn't lost when the list closes
+                        onMouseDown={(e) => {
+                            e.preventDefault();
+                            setSelected(bank.name);
+                            onPick();
+                        }}
+                        className="cursor-pointer py-1 hover:bg-white/10"
                     >
-                        {bank}
+                        {bank.name}
                     </div>
-                ))}
-            </div>
-        </>
+                ))
+            )}
+        </div>
     );
 }
