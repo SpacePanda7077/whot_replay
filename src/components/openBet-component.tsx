@@ -2,6 +2,7 @@ import {
     bet_key,
     calculateBetStats,
     is_accumulator,
+    single_team,
     useHistoryStore,
 } from "../store/history";
 import { useEffect, useMemo, useState } from "react";
@@ -121,7 +122,7 @@ export default function OpenBets() {
         for (const b of openBets) {
             const acc = is_accumulator(b);
             const id = acc ? b.accumulator_id : b.game_id;
-            const key = acc ? b.combo : b.team;
+            const key = acc ? b.combo : single_team(b);
             const o = id && key ? get_odds(odds, id)?.[key] : undefined;
             if (typeof o === "number") potential += b.amount * o;
             else missing += 1;

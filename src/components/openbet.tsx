@@ -1,5 +1,5 @@
 import { ImBin } from "react-icons/im";
-import { bet, is_accumulator } from "../store/history";
+import { bet, is_accumulator, single_team } from "../store/history";
 import { getTimeRemaining } from "../pages/home/UpcomingMatchTopInfo";
 import { useReplayStore } from "../store/replay.store";
 import { useEffect, useState } from "react";
@@ -20,7 +20,8 @@ export default function OpenBet({ bet: b }: Prop) {
     const display = useDisplayStatus(b);
     // Odds stream ids/keys: game id + orange|blue, or accumulator id + combo.
     const odds_id = acc ? b.accumulator_id : b.game_id;
-    const odds_key = acc ? b.combo : b.team;
+    const team = single_team(b);
+    const odds_key = acc ? b.combo : team;
     const odds = useGameOdds(odds_id ?? "")?.[odds_key ?? ""];
 
     // Only single bets have one lock time we can look up from here.

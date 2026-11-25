@@ -1,6 +1,6 @@
 import { create } from "zustand";
 type Players = {
-    player_index: 0;
+    player_index: number;
     userid: string;
     full_name: string;
     avatar: string;
@@ -45,6 +45,16 @@ type bet_history = {
 };
 
 export const is_accumulator = (b: bet) => !!b.combo || !!b.accumulator_id;
+
+// GET /api/bets has no `team`; the side a single bet backs is player.player_index
+// (0 = orange, 1 = blue). This is the key the odds stream uses.
+export const single_team = (b: bet): "orange" | "blue" | undefined => {
+    const t = b.team?.toLowerCase();
+    if (t === "orange" || t === "blue") return t;
+    if (b.player?.player_index === 0) return "orange";
+    if (b.player?.player_index === 1) return "blue";
+    return undefined;
+};
 
 // Singles and accumulators come from different collections, so ids can
 // overlap. Use this for React keys.

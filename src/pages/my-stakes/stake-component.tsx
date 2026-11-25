@@ -43,23 +43,24 @@ export default function StakeComponent({ bet }: Prop) {
     };
 
     return (
-        <div className="flex flex-col gap-2 bg-[#2E041D] p-4 rounded-lg border border-[#FFB800]/20">
-            <div className="flex justify-between text-xs">
+        <div className="flex flex-col gap-2 bg-[#2E041D] p-4 rounded-lg border border-[#FFB800]/20 w-full min-w-0 overflow-hidden">
+            <div className="flex justify-between gap-2 text-xs">
                 <p className="bg-white/5 px-4 py-1 rounded-lg font-semibold">
                     {acc ? "Accumulator" : "Single"}
                 </p>
                 <div
-                    className={`font-semibold uppercase ${STATUS_STYLE[status] ?? ""}`}
+                    className={`font-semibold uppercase shrink-0 ${STATUS_STYLE[status] ?? ""}`}
                 >
                     {status}
                 </div>
             </div>
-            <div className="flex items-center justify-between border-b border-b-white/20 pb-4">
-                <div className="flex gap-2 items-center">
-                    <div>
+            <div className="flex items-start justify-between gap-3 border-b border-b-white/20 pb-4">
+                {/* min-w-0 + flex-1 lets this column shrink and wrap instead of overflowing */}
+                <div className="flex gap-2 items-center min-w-0 flex-1">
+                    <div className="min-w-0 flex-1">
                         {acc && bet.combo ? (
-                            <div className="flex gap-2 items-center">
-                                players :{" "}
+                            <div className="flex flex-wrap gap-2 items-center min-w-0">
+                                <span className="shrink-0">players :</span>
                                 {bet.legs.map((t, i) => (
                                     <p
                                         style={{
@@ -69,7 +70,7 @@ export default function StakeComponent({ bet }: Prop) {
                                                     : "#0AB2C4",
                                         }}
                                         key={i}
-                                        className="font-semibold p-1 rounded-lg text-[#2E041D]"
+                                        className="font-semibold p-1 rounded-lg text-[#2E041D] max-w-full break-words [overflow-wrap:anywhere]"
                                     >
                                         {t.player.full_name}
                                     </p>
@@ -83,17 +84,18 @@ export default function StakeComponent({ bet }: Prop) {
                                             ? "orange"
                                             : "#0AB2C4",
                                 }}
-                                className="font-semibold capitalize w-fit p-1 rounded-lg text-[#2E041D] "
+                                className="font-semibold capitalize w-fit max-w-full p-1 rounded-lg text-[#2E041D] break-words [overflow-wrap:anywhere]"
                             >
                                 {bet.player!.full_name}
                             </p>
                         )}
-                        <p className="text-xs">
+                        <p className="text-xs mt-1 break-words">
                             # {bet.id} · {formatTimeAgo(bet.createdtime)}
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-col items-end">
+                {/* Amount column never shrinks, so it stays visible on small screens */}
+                <div className="flex flex-col items-end shrink-0">
                     <p className="text-white font-bold">₦{bet.amount}</p>
                     {bet.status === "won" && (
                         <p className="text-xs text-green-400">
@@ -103,12 +105,17 @@ export default function StakeComponent({ bet }: Prop) {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center text-xs">
-                <p>game id : {bet.game_id || bet.accumulator_id}</p>
+            <div className="flex flex-wrap justify-between items-center gap-2 text-xs">
+                <p className="min-w-0 break-all">
+                    game id : {bet.game_id || bet.accumulator_id}
+                </p>
                 {acc && bet.combo && (
-                    <div className="flex items-center gap-2">
-                        slip code : {bet.slip_code}{" "}
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="break-all">
+                            slip code : {bet.slip_code}
+                        </span>
                         <FaCopy
+                            className="shrink-0 cursor-pointer"
                             color={color}
                             onClick={() => copy_slip(bet.slip_code)}
                         />
@@ -136,4 +143,3 @@ function formatTimeAgo(timestamp: string): string {
     }
     return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
 }
-
