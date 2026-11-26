@@ -10,6 +10,7 @@ import { MdArrowOutward } from "react-icons/md";
 import { Get_Tx } from "../../api/tx-api";
 import { useAuth } from "../../store/auth-store";
 import { formatTimeAgo } from "../my-stakes/stake-component";
+import { useGetTransactions } from "../../store/wallet-store";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -22,22 +23,7 @@ type txType = {
 
 export default function TransactionHistory() {
     const logs = useAuth((s) => s.login_result);
-    const { data: TxData, error: Txerror } = useQuery({
-        queryKey: ["getTxQuery"],
-        queryFn: () => Get_Tx(logs?.token!),
-        enabled: logs !== null,
-    });
-
-    useEffect(() => {
-        if (TxData) {
-            console.log(TxData);
-            setTx(TxData.data.transactions);
-        }
-        if (Txerror) {
-            console.log(Txerror);
-        }
-    }, [TxData, Txerror]);
-    const [tx, setTx] = useState<txType[]>([]);
+    const tx = useGetTransactions((s) => s.tx);
 
     const type: any = {
         deposit: { ICON: <GoArrowUpRight />, color: "34, 197, 94" },
@@ -82,13 +68,17 @@ export default function TransactionHistory() {
                             <span className="flex justify-center text-white/70 p-1 rounded">
                                 {formatTimeAgo(t.createdtime)}
                             </span>
-                            <span
-                                style={{
-                                    backgroundColor: getStatusColor(t.status),
-                                }}
-                                className="flex w-fit justify-end text-white/70 p-1 rounded"
-                            >
-                                {t.status}
+                            <span className="flex justify-end font-bold text-[#2E071B] p-1 rounded">
+                                <span
+                                    style={{
+                                        backgroundColor: getStatusColor(
+                                            t.status,
+                                        ),
+                                    }}
+                                    className="p-2 rounded-lg"
+                                >
+                                    {t.status}
+                                </span>
                             </span>
                         </div>
                     ))}

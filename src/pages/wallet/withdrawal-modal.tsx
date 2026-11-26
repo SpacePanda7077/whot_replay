@@ -64,7 +64,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
             Withdraw(data.token, data.data),
         onSuccess: (data) => {
             if (data?.status === 200 || data?.status === 201) {
-                setMsg("DEPOSIT SUCCESSFULLY");
+                setMsg("Withdrawal SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
             }
