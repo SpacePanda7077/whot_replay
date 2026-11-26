@@ -1,5 +1,10 @@
 interface Prop {
-    setSelected: React.Dispatch<React.SetStateAction<string>>;
+    setSelected: React.Dispatch<
+        React.SetStateAction<{
+            name: string;
+            code: string;
+        }>
+    >;
     onPick: () => void;
     bankList: { name: string; code: string }[];
 }
@@ -21,7 +26,7 @@ export default function PaymentMethodList({
                         // so the click isn't lost when the list closes
                         onMouseDown={(e) => {
                             e.preventDefault();
-                            setSelected(bank.name);
+                            setSelected(bank);
                             onPick();
                         }}
                         className="cursor-pointer py-1 hover:bg-white/10"

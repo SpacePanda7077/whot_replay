@@ -16,7 +16,10 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
     const [accountNumber, setAccountNumber] = useState<string>("");
     const [amount, setAmount] = useState<number>();
     const [bankSelectionOpen, setBankSelectionOpen] = useState(false);
-    const [selectedBank, setSelectedBank] = useState("");
+    const [selectedBank, setSelectedBank] = useState<{
+        name: string;
+        code: string;
+    }>({ name: "", code: "" });
     const wallet = useWalletStore((s) => s.wallet);
 
     const logs = useAuth((s) => s.login_result);
@@ -43,7 +46,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
 
     // Banks matching what's typed; names starting with the query come first
     const filteredBanks = useMemo(() => {
-        const q = selectedBank.trim().toLowerCase();
+        const q = selectedBank.name.trim().toLowerCase();
         if (!q) return banks;
 
         return banks
@@ -135,7 +138,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
     const handleSetAccount = useCallback(() => {
         if (!logs || !accountName || !accountNumber || !selectedBank) return;
         // Only allow a bank that actually exists in the list
-        if (!banks.some((b) => b.name === selectedBank)) return;
+        if (!banks.some((b) => b.name === selectedBank.name)) return;
 
         console.log("Setting account ...");
         set_account({
@@ -143,18 +146,30 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
             data: {
                 account_name: accountName,
                 account_number: accountNumber,
-                bank_name: selectedBank,
+                bank_name: selectedBank.code,
             },
         });
     }, [logs, accountName, accountNumber, selectedBank, banks, set_account]);
+    const getBankNameFromCode = (code: string) => {
+        const b = banks.find((bank) => bank.code === code);
+        return b;
+    };
 
     useEffect(() => {
+        if (!banks) return;
         if (wallet?.withdrawal_account) {
             setAccountName(wallet.withdrawal_account.account_name ?? "");
             setAccountNumber(wallet.withdrawal_account.account_number ?? "");
-            setSelectedBank(wallet.withdrawal_account.bank_name ?? "");
+            const bank = getBankNameFromCode(
+                wallet.withdrawal_account.bank_name,
+            );
+            console.log(bank);
+            setSelectedBank({
+                name: bank?.name ?? "",
+                code: bank?.code ?? "",
+            });
         }
-    }, [wallet]);
+    }, [wallet, banks]);
 
     return (
         <>
@@ -189,12 +204,15 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                             <div className="relative bg-white/5 w-1/2 h-10 p-2 rounded text-white font-bold">
                                 <input
                                     type="text"
-                                    value={selectedBank}
+                                    value={selectedBank.name}
                                     placeholder="Select Bank"
                                     onFocus={() => setBankSelectionOpen(true)}
                                     onBlur={() => setBankSelectionOpen(false)}
                                     onChange={(e) => {
-                                        setSelectedBank(e.target.value);
+                                        setSelectedBank({
+                                            name: e.target.value,
+                                            code: "",
+                                        });
                                         setBankSelectionOpen(true);
                                     }}
                                     className="w-full h-full outline-none placeholder:text-white/40"
@@ -234,7 +252,9 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                             </button>
                             {wallet?.withdrawal_account.account_number &&
                             accountNumber ===
-                                wallet.withdrawal_account.account_number ? (
+                                wallet.withdrawal_account.account_number &&
+                            selectedBank.code ===
+                                wallet.withdrawal_account.bank_name ? (
                                 <button
                                     onClick={handleWithdraw}
                                     className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80"
