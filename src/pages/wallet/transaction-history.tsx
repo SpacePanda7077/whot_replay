@@ -61,7 +61,7 @@ export default function TransactionHistory() {
                     {paginatedTx.map((t, i) => (
                         <div
                             key={start + i}
-                            className="grid grid-cols-3 gap-2 p-2 border-b border-[#FFB800]/20"
+                            className="grid grid-cols-4 gap-2 p-2 border-b border-[#FFB800]/20"
                         >
                             <span className="text-white flex items-center gap-2">
                                 <div
@@ -79,8 +79,16 @@ export default function TransactionHistory() {
                             <span className="text-white text-center font-bold">
                                 ₦{t.amount.toLocaleString()}
                             </span>
-                            <span className="flex justify-end text-white/70 p-1 rounded">
+                            <span className="flex justify-center text-white/70 p-1 rounded">
                                 {formatTimeAgo(t.createdtime)}
+                            </span>
+                            <span
+                                style={{
+                                    backgroundColor: getStatusColor(t.status),
+                                }}
+                                className="flex w-fit justify-end text-white/70 p-1 rounded"
+                            >
+                                {t.status}
                             </span>
                         </div>
                     ))}
@@ -108,4 +116,11 @@ export default function TransactionHistory() {
             </div>
         </>
     );
+}
+
+function getStatusColor(t: `pending` | `success` | `failed` | `reverted`) {
+    if (t === "pending") return "grey";
+    if (t === "success") return "green";
+    if (t === "failed") return "red";
+    return "orange";
 }
