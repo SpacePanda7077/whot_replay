@@ -58,8 +58,8 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
             });
     }, [banks, selectedBank]);
 
-    const { mutate: withdraw } = useMutation({
-        mutationKey: ["deposit_funds"],
+    const { mutate: withdraw, isPending: isWithdrawing } = useMutation({
+        mutationKey: ["withdraw_funds"],
         mutationFn: (data: { token: string; data: { amount: number } }) =>
             Withdraw(data.token, data.data),
         onSuccess: (data) => {
@@ -90,7 +90,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
         },
     });
 
-    const { mutate: set_account } = useMutation({
+    const { mutate: set_account, isPending: isSettingAccount } = useMutation({
         mutationKey: ["set_account"],
         mutationFn: (data: {
             token: string;
@@ -128,14 +128,16 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
     });
 
     const handleWithdraw = useCallback(() => {
+        if (isWithdrawing) return; // ignore clicks while a withdrawal is in flight
         if (!logs || !amount || amount <= 0) return;
         withdraw({
             token: logs.token,
             data: { amount: amount },
         });
-    }, [logs, amount, withdraw]);
+    }, [logs, amount, withdraw, isWithdrawing]);
 
     const handleSetAccount = useCallback(() => {
+        if (isSettingAccount) return;
         if (!logs || !accountName || !accountNumber || !selectedBank) return;
         // Only allow a bank that actually exists in the list
         if (!banks.some((b) => b.name === selectedBank.name)) return;
@@ -149,7 +151,15 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                 bank_name: selectedBank.code,
             },
         });
-    }, [logs, accountName, accountNumber, selectedBank, banks, set_account]);
+    }, [
+        logs,
+        accountName,
+        accountNumber,
+        selectedBank,
+        banks,
+        set_account,
+        isSettingAccount,
+    ]);
     const getBankNameFromCode = (code: string) => {
         const b = banks.find((bank) => bank.code === code);
         return b;
@@ -257,16 +267,22 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                                 wallet.withdrawal_account.bank_name ? (
                                 <button
                                     onClick={handleWithdraw}
-                                    className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80"
+                                    disabled={isWithdrawing}
+                                    className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                                 >
-                                    Withdraw
+                                    {isWithdrawing
+                                        ? "Processing..."
+                                        : "Withdraw"}
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleSetAccount}
-                                    className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80"
+                                    disabled={isSettingAccount}
+                                    className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                                 >
-                                    Set Account
+                                    {isSettingAccount
+                                        ? "Saving..."
+                                        : "Set Account"}
                                 </button>
                             )}
                         </div>

@@ -34,7 +34,7 @@ export default function DepositModal({ setOpen }: Prop) {
         setStatus,
         secondsLeft,
     } = useFetchTxStatus();
-    const { mutate } = useMutation({
+    const { mutate, isPending } = useMutation({
         mutationKey: ["deposit_funds"],
         mutationFn: (data: {
             token: string;
@@ -75,12 +75,13 @@ export default function DepositModal({ setOpen }: Prop) {
     // 💡 You can now delete the entire useEffect hook!
 
     const handleDeposit = useCallback(() => {
+        if (isPending) return; // ignore clicks while a deposit is in flight
         if (!logs || !amount || amount <= 0 || !selectedMethod) return;
         mutate({
             token: logs.token,
             data: { amount: amount, provider: selectedMethod },
         });
-    }, [logs, amount, selectedMethod]);
+    }, [logs, amount, selectedMethod, isPending, mutate]);
 
     const handlePayment = async (url: string) => {
         // 1. Open a blank window IMMEDIATELY on click to bypass pop-up blockers
@@ -160,9 +161,10 @@ export default function DepositModal({ setOpen }: Prop) {
                             </button>
                             <button
                                 onClick={handleDeposit}
-                                className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80"
+                                disabled={isPending}
+                                className="shadow-[0_0_10px_2px_#ffa400] w-full bg-[#FFB800] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#FFB800]/80 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                             >
-                                Deposit
+                                {isPending ? "Processing..." : "Deposit"}
                             </button>
                         </div>
                     </div>

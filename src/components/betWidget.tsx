@@ -28,6 +28,7 @@ export default function BetWidget({
     setBetAmount,
 }: Prop) {
     const suggested_amount = [200, 500, 1000, 5000, 10000];
+    const [slipCode, setSlipCode] = useState<string>();
     const logs = useAuth((s) => s.login_result);
     const refetch = useHistoryStore((s) => s.refetch);
     const [show, setShow] = useState(false);
@@ -43,7 +44,7 @@ export default function BetWidget({
         queryClient.invalidateQueries({ queryKey: ["get_wallet_info"] });
     };
 
-    const { mutate: placeSingleBet } = useMutation({
+    const { mutate: placeSingleBet, isPending: isPlacingSingle } = useMutation({
         mutationKey: ["place_bet_single"],
         mutationFn: (token: string) =>
             Place_Bet(token, {
@@ -54,6 +55,7 @@ export default function BetWidget({
         onSuccess: (data) => {
             // If your API function returns the response object containing status
             if (data?.status === 200 || data?.status === 201) {
+                setSlipCode(undefined);
                 setMsg("BET PLACED SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
@@ -83,7 +85,7 @@ export default function BetWidget({
         },
     });
 
-    const { mutate: placeMultiBet } = useMutation({
+    const { mutate: placeMultiBet, isPending: isPlacingMulti } = useMutation({
         mutationKey: ["place_bet_multi"],
         mutationFn: (data: {
             token: string;
@@ -99,6 +101,7 @@ export default function BetWidget({
         onSuccess: (data) => {
             // If your API function returns the response object containing status
             if (data?.status === 200 || data?.status === 201) {
+                setSlipCode(data.data?.slip_code);
                 setMsg("BET PLACED SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
@@ -127,6 +130,9 @@ export default function BetWidget({
             setShow(true);
         },
     });
+    // True while any bet request is in flight; used to block double clicks.
+    const isPlacing = isPlacingSingle || isPlacingMulti;
+
     useEffect(() => {
         getBetHistory();
     }, [refetch]);
@@ -150,7 +156,7 @@ export default function BetWidget({
     };
 
     const handleBet = useCallback(() => {
-        if (!logs) return;
+        if (!logs || isPlacing) return; // ignore clicks while a bet is in flight
         if (matchType === "MULTI") {
             console.log("Placing Multi Bet : ", choosenAccumulatorBet);
             const multiBetPayload = formaMultiBetPayload();
@@ -167,7 +173,14 @@ export default function BetWidget({
         } else {
             placeSingleBet(logs.token);
         }
-    }, [logs, matchType, choosenAccumulatorBet, choosenBet, betAmount]);
+    }, [
+        logs,
+        matchType,
+        choosenAccumulatorBet,
+        choosenBet,
+        betAmount,
+        isPlacing,
+    ]);
     return (
         <div className="flex shrink-0 flex-col gap-2 rounded-lg border border-[#FDC94B] bg-[#2e071b] p-2 shadow-lg shadow-black">
             <div className="grid w-full grid-cols-5 gap-1 p-1 sm:gap-2 sm:p-2">
@@ -193,11 +206,19 @@ export default function BetWidget({
 
             <button
                 onClick={handleBet}
-                className="w-full py-2 border border-white rounded-md bg-gradient-to-b from-[#FDC94B] to-[#F9B92D] shadow-[0_4px_0_#F9B92D,0_0_20px_rgba(0,120,255,0.6)]"
+                disabled={isPlacing}
+                className="w-full py-2 border border-white rounded-md bg-gradient-to-b from-[#FDC94B] to-[#F9B92D] shadow-[0_4px_0_#F9B92D,0_0_20px_rgba(0,120,255,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
             >
-                BET
+                {isPlacing ? "PLACING..." : "BET"}
             </button>
-            {show && <PopUpModal text={msg} type={status} setShow={setShow} />}
+            {show && (
+                <PopUpModal
+                    text={msg}
+                    type={status}
+                    setShow={setShow}
+                    slipCode={slipCode}
+                />
+            )}
         </div>
     );
 }
