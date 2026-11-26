@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Place_Bet, Place_Multi_Bet } from "../api/bet-api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Get_Slip_Bets, Place_Bet, Place_Multi_Bet } from "../api/bet-api";
 import { useAuth } from "../store/auth-store";
 import { useCallback, useEffect, useState } from "react";
 import PopUpModal from "./popup-modal";
@@ -29,6 +29,7 @@ export default function BetWidget({
 }: Prop) {
     const suggested_amount = [200, 500, 1000, 5000, 10000];
     const [slipCode, setSlipCode] = useState<string>();
+    const [code, setCode] = useState<string>("");
     const logs = useAuth((s) => s.login_result);
     const refetch = useHistoryStore((s) => s.refetch);
     const [show, setShow] = useState(false);
@@ -43,6 +44,80 @@ export default function BetWidget({
     const refreshBalance = () => {
         queryClient.invalidateQueries({ queryKey: ["get_wallet_info"] });
     };
+
+    const [serach, setSearch] = useState(false);
+
+    const { mutate } = useMutation({
+        mutationKey: ["copy_bets_data"],
+        mutationFn: (data: {
+            token: string;
+            data: {
+                accumulator_id: string;
+                combo: string;
+                amount: number;
+                slip_code?: string;
+            };
+        }) => Place_Multi_Bet(data.token, data.data),
+        onSuccess: (data) => {
+            // If your API function returns the response object containing status
+            if (data?.status === 200 || data?.status === 201) {
+                setMsg("BET PLACED SUCCESSFULLY");
+                setStatus("SUCCESS");
+                setShow(true);
+                getBetHistory();
+                refreshBalance();
+            }
+            console.log(data);
+        },
+        onError: (err: any) => {
+            console.error(err);
+
+            // Extract status from Axios error or custom thrown error
+            const statusCode = err.response?.status || err.status;
+
+            if (statusCode === 400) {
+                setMsg("INVALID BET");
+            } else if (statusCode === 409) {
+                setMsg("BET IS NOT OPEN");
+            } else if (statusCode === 402) {
+                setMsg("INSUFFICIENT BALANCE");
+            } else {
+                setMsg("ERROR PLACING BET");
+            }
+
+            setStatus("ERROR");
+            setShow(true);
+        },
+    });
+
+    const { data: betslip, error: betSlipError } = useQuery({
+        queryKey: ["get_bets_from_slip"],
+        queryFn: () => Get_Slip_Bets(code!),
+        enabled: serach,
+    });
+
+    useEffect(() => {
+        if (!logs) return;
+        if (betslip) {
+            console.log(betslip);
+            for (const bet of betslip.data.accumulator_bets) {
+                mutate({
+                    token: logs.token,
+                    data: {
+                        accumulator_id: bet.accumulator_id,
+                        combo: bet.combo,
+                        amount: bet.amount,
+                    },
+                });
+            }
+
+            setSearch(false);
+        }
+        if (betSlipError) {
+            console.log(betSlipError);
+            setSearch(false);
+        }
+    }, [betslip, betSlipError, logs]);
 
     const { mutate: placeSingleBet, isPending: isPlacingSingle } = useMutation({
         mutationKey: ["place_bet_single"],
@@ -203,6 +278,23 @@ export default function BetWidget({
                 }}
                 className="w-full min-w-0 rounded-lg border bg-[#030b11] p-2 text-[#FDC94B]"
             />
+            <div className="flex items-center gap-4">
+                <input
+                    className="border border-[#ffb800]/50 w-full p-2 rounded-lg placeholder-white/70"
+                    type="text"
+                    placeholder="Input Slip Code ..."
+                    name=""
+                    id=""
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                />
+                <button
+                    onClick={() => setSearch(true)}
+                    className="p-2 bg-[#ffb800] rounded-lg text-[#530237] font-bold"
+                >
+                    Submit
+                </button>
+            </div>
 
             <button
                 onClick={handleBet}
