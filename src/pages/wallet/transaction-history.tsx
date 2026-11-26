@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { CiWallet } from "react-icons/ci";
 import {
     GoArrowDownLeft,
@@ -6,26 +7,41 @@ import {
     GoArrowUpRight,
 } from "react-icons/go";
 import { MdArrowOutward } from "react-icons/md";
+import { Get_Tx } from "../../api/tx-api";
+import { useAuth } from "../../store/auth-store";
+import { formatTimeAgo } from "../my-stakes/stake-component";
 
 const ITEMS_PER_PAGE = 5;
 
+type txType = {
+    type: "deposit" | "withdrawal";
+    amount: number;
+    status: `pending` | `success` | `failed` | `reverted`;
+    createdtime: string;
+};
+
 export default function TransactionHistory() {
-    const tx = [
-        { type: "Deposit", amount: 1000, date: "2023-08-01" },
-        { type: "Payout", amount: 500, date: "2023-08-02" },
-        { type: "Deposit", amount: 2000, date: "2023-08-03" },
-        { type: "Payout", amount: 1000, date: "2023-08-04" },
-        { type: "Deposit", amount: 1500, date: "2023-08-05" },
-        { type: "Payout", amount: 700, date: "2023-08-06" },
-        { type: "Deposit", amount: 3000, date: "2023-08-07" },
-        { type: "Payout", amount: 1200, date: "2023-08-08" },
-        { type: "Deposit", amount: 2500, date: "2023-08-09" },
-        { type: "Payout", amount: 800, date: "2023-08-10" },
-    ];
+    const logs = useAuth((s) => s.login_result);
+    const { data: TxData, error: Txerror } = useQuery({
+        queryKey: ["getTxQuery"],
+        queryFn: () => Get_Tx(logs?.token!),
+        enabled: logs !== null,
+    });
+
+    useEffect(() => {
+        if (TxData) {
+            console.log(TxData);
+            setTx(TxData.data.transactions);
+        }
+        if (Txerror) {
+            console.log(Txerror);
+        }
+    }, [TxData, Txerror]);
+    const [tx, setTx] = useState<txType[]>([]);
 
     const type: any = {
-        Deposit: { ICON: <GoArrowUpRight />, color: "34, 197, 94" },
-        Payout: { ICON: <GoArrowDownLeft />, color: "255, 61, 0" },
+        deposit: { ICON: <GoArrowUpRight />, color: "34, 197, 94" },
+        withdrawal: { ICON: <GoArrowDownLeft />, color: "255, 61, 0" },
     };
 
     const [page, setPage] = useState(1);
@@ -64,7 +80,7 @@ export default function TransactionHistory() {
                                 ₦{t.amount.toLocaleString()}
                             </span>
                             <span className="flex justify-end text-white/70 p-1 rounded">
-                                {t.date}
+                                {formatTimeAgo(t.createdtime)}
                             </span>
                         </div>
                     ))}
@@ -93,4 +109,3 @@ export default function TransactionHistory() {
         </>
     );
 }
-

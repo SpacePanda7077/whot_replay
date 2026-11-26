@@ -126,7 +126,7 @@ export default function StakeComponent({ bet }: Prop) {
     );
 }
 
-function formatTimeAgo(timestamp: string): string {
+export function formatTimeAgo(timestamp: string): string {
     const createdDate = new Date(timestamp);
     const diffInMs = Date.now() - createdDate.getTime();
 
@@ -143,3 +143,4 @@ function formatTimeAgo(timestamp: string): string {
     }
     return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
 }
+
