@@ -127,6 +127,8 @@ export default function Matches() {
                             choosenAccumulatorBet={choosenAccumulatorBet}
                             matchType={matchType}
                             betAmount={betAmount}
+                            setMatchType={setMatchType}
+                            setChoosenAccumulatorBet={setChoosenAccumulatorBet}
                             setBetAmount={setBetAmout}
                         />
                     </div>
@@ -156,3 +158,4 @@ export default function Matches() {
         </>
     );
 }
+

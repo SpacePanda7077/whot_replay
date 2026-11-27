@@ -1,10 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Get_Slip_Bets, Place_Bet, Place_Multi_Bet } from "../api/bet-api";
 import { useAuth } from "../store/auth-store";
-import { useCallback, useEffect, useState } from "react";
+import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useState,
+} from "react";
 import PopUpModal from "./popup-modal";
 import { useFetchBets } from "../hooks/useFetchBets";
 import { useHistoryStore } from "../store/history";
+import { Side } from "../pages/home/Accumulator.utils";
 
 interface Prop {
     choosenBet: {
@@ -15,7 +22,14 @@ interface Prop {
         game_id: string;
         combo: string[];
     };
+    setChoosenAccumulatorBet: Dispatch<
+        SetStateAction<{
+            game_id: string;
+            combo: string[];
+        }>
+    >;
     matchType: "SINGLE" | "MULTI";
+    setMatchType: Dispatch<SetStateAction<"SINGLE" | "MULTI">>;
     betAmount: number;
     setBetAmount: (value: number) => void;
 }
@@ -23,8 +37,10 @@ interface Prop {
 export default function BetWidget({
     choosenBet,
     choosenAccumulatorBet,
+    setChoosenAccumulatorBet,
     betAmount,
     matchType,
+    setMatchType,
     setBetAmount,
 }: Prop) {
     const suggested_amount = [200, 500, 1000, 5000, 10000];
@@ -47,49 +63,6 @@ export default function BetWidget({
 
     const [serach, setSearch] = useState(false);
 
-    const { mutate } = useMutation({
-        mutationKey: ["copy_bets_data"],
-        mutationFn: (data: {
-            token: string;
-            data: {
-                accumulator_id: string;
-                combo: string;
-                amount: number;
-                slip_code?: string;
-            };
-        }) => Place_Multi_Bet(data.token, data.data),
-        onSuccess: (data) => {
-            // If your API function returns the response object containing status
-            if (data?.status === 200 || data?.status === 201) {
-                setMsg("BET PLACED SUCCESSFULLY");
-                setStatus("SUCCESS");
-                setShow(true);
-                getBetHistory();
-                refreshBalance();
-            }
-            console.log(data);
-        },
-        onError: (err: any) => {
-            console.error(err);
-
-            // Extract status from Axios error or custom thrown error
-            const statusCode = err.response?.status || err.status;
-
-            if (statusCode === 400) {
-                setMsg("INVALID BET");
-            } else if (statusCode === 409) {
-                setMsg("BET IS NOT OPEN");
-            } else if (statusCode === 402) {
-                setMsg("INSUFFICIENT BALANCE");
-            } else {
-                setMsg("ERROR PLACING BET");
-            }
-
-            setStatus("ERROR");
-            setShow(true);
-        },
-    });
-
     const { data: betslip, error: betSlipError } = useQuery({
         queryKey: ["get_bets_from_slip"],
         queryFn: () => Get_Slip_Bets(code!),
@@ -100,17 +73,19 @@ export default function BetWidget({
         if (!logs) return;
         if (betslip) {
             console.log(betslip);
-            for (const bet of betslip.data.accumulator_bets) {
-                mutate({
-                    token: logs.token,
-                    data: {
-                        accumulator_id: bet.accumulator_id,
-                        combo: bet.combo,
-                        amount: bet.amount,
-                    },
-                });
+            if (betslip.data.accumulator_bets[0].status !== "placed") {
+                setStatus("ERROR");
+                setMsg("BET IS NOT OPEN");
+                setShow(true);
+                setSearch(false);
+                return;
             }
-
+            setChoosenAccumulatorBet({
+                game_id: betslip.data.accumulator_bets[0].accumulator_id,
+                combo: from_combo_string(
+                    betslip.data.accumulator_bets[0].combo,
+                ),
+            });
             setSearch(false);
         }
         if (betSlipError) {
@@ -289,7 +264,11 @@ export default function BetWidget({
                     onChange={(e) => setCode(e.target.value)}
                 />
                 <button
-                    onClick={() => setSearch(true)}
+                    onClick={() => {
+                        setMatchType("MULTI");
+                        setSearch(true);
+                        setCode("");
+                    }}
                     className="p-2 bg-[#ffb800] rounded-lg text-[#530237] font-bold"
                 >
                     Submit
@@ -321,5 +300,19 @@ function formatNumber(num: number) {
     }
 
     return num.toString();
+}
+
+const LETTER_SIDE: Record<string, Side> = { O: "orange", B: "blue" };
+
+// "OBO" -> ["orange", "blue", "orange"]
+// Returns [] if the string has anything other than O or B.
+export function from_combo_string(combo: string): Side[] {
+    const sides = combo
+        .trim()
+        .toUpperCase()
+        .split("")
+        .map((c) => LETTER_SIDE[c]);
+
+    return sides.every(Boolean) ? sides : [];
 }
 

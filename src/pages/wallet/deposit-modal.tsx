@@ -77,9 +77,12 @@ export default function DepositModal({ setOpen }: Prop) {
     const handleDeposit = useCallback(() => {
         if (isPending) return; // ignore clicks while a deposit is in flight
         if (!logs || !amount || amount <= 0 || !selectedMethod) return;
+        const s = selectedMethod.includes("USDT") ? "crypto" : selectedMethod;
+        const data = { amount: amount, provider: s };
+        console.log(data);
         mutate({
             token: logs.token,
-            data: { amount: amount, provider: selectedMethod },
+            data,
         });
     }, [logs, amount, selectedMethod, isPending, mutate]);
 

@@ -10,7 +10,8 @@ export default function BankList({ setSelected }: Prop) {
         `payaza`,
         `nomba`,
         `credo`,
-        `crypto`,
+        `USDT-ERC20`,
+        `USDT-TRC20`,
         `palmpay`,
     ];
     return (
