@@ -82,7 +82,7 @@ export default function About() {
                             </div>
                         </div>
                         <p className="text-white text-center lg:text-start text-xs">
-                            © 2024 WHOT Africa. All Rights Reserved. WHOT Africa
+                            © 2027 WHOT Africa. All Rights Reserved. WHOT Africa
                             and the WHOT Africa logo are trademarks of WHOT
                             Studios.
                             <br /> Any unauthorized use, reproduction, or
@@ -107,4 +107,3 @@ export default function About() {
         </>
     );
 }
-

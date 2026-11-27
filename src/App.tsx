@@ -18,6 +18,14 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { SigninWithSocials } from "./api/auth-api";
 import axios from "axios";
 import { toast } from "sonner";
+import Deposit from "./pages/Deposit";
+import PayazaResult from "./pages/PayazaResult";
+import MarasoftPayResult from "./pages/MarasoftPayResult";
+import CredoVerify from "./pages/CredoVerify";
+import CryptoResult from "./pages/CryptoResult";
+import PalmpayVerify from "./pages/PalmpayVerify";
+import NombaVerify from "./pages/NombaVerify";
+import OpayResult from "./pages/OpayResult";
 
 function App() {
     const logs = useAuth((s) => s.login_result);
@@ -131,15 +139,23 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                     <Route path="/my-stakes" element={<MyStakes />} />
                     <Route path="/wallet" element={<Wallet />} />
-                    <Route
-                        path="/deposit"
-                        element={<Wallet isDepositing={true} />}
-                    />
                 </Route>
+                <Route path="/deposit" element={<Deposit />} />
 
                 <Route path="/whot-africa" element={<WhotAfrica />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy-policy" element={<Privacy_Policy />} />
+                <Route
+                    path="/marasoftpay-result"
+                    element={<MarasoftPayResult />}
+                />
+                <Route path="/payaza-result" element={<PayazaResult />} />
+                <Route path="/credo-verify" element={<CredoVerify />} />
+
+                <Route path="/crypto-result" element={<CryptoResult />} />
+                <Route path="/palmpay-verify" element={<PalmpayVerify />} />
+                <Route path="/nomba-result" element={<NombaVerify />} />
+                <Route path="/opay-result" element={<OpayResult />} />
             </Routes>
         </div>
     );
