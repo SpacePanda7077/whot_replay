@@ -11,8 +11,9 @@ import { Get_Tx } from "../../api/tx-api";
 import { useEffect } from "react";
 interface Prop {
     refetch: () => void;
+    isDepositing?: boolean;
 }
-export default function WalletDashboard({ refetch }: Prop) {
+export default function WalletDashboard({ refetch, isDepositing }: Prop) {
     const wallet = useWalletStore((s) => s.wallet);
     const setTx = useGetTransactions((s) => s.setTx);
     const { totalDeposit, totalWithdrawal } = useTransactionTotals();
@@ -60,7 +61,10 @@ export default function WalletDashboard({ refetch }: Prop) {
                     </p>
                 </div>
 
-                <DepositDashboard refetch={refetch} />
+                <DepositDashboard
+                    refetch={refetch}
+                    isDepositing={isDepositing}
+                />
             </div>
         </>
     );

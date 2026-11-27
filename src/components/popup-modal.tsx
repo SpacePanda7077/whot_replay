@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { FaCheck, FaCopy } from "react-icons/fa";
 import { FcCancel } from "react-icons/fc";
 import {
@@ -44,39 +45,50 @@ export default function PopUpModal({
         }
     };
 
-    return (
-        <div className="z-50 fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center backdrop-blur-lg shadow-black shadow-lg">
-            <div className="flex flex-col justify-center items-center gap-6 bg-[#370723] border border-[#FFB800]/20 rounded-lg h-auto p-10 w-[95vw] md:w-[60vw] lg:w-[35vw] max-h-[90vh] overflow-y-auto">
-                {type === "SUCCESS" && <FaCheck size={128} color="#7FBF18" />}
-                {type === "ERROR" && <FcCancel size={128} color="#bf1818" />}
+    // Rendered in a portal on <body> so it is always centered on the screen,
+    // even if a parent has a transform / filter / overflow that would trap a
+    // `fixed` element.
+    return createPortal(
+        <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-lg"
+        >
+            <div className="my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col items-center gap-4 overflow-y-auto rounded-lg border border-[#FFB800]/20 bg-[#370723] p-5 sm:max-w-md sm:gap-6 sm:p-8">
+                <div className="h-20 w-20 shrink-0 sm:h-28 sm:w-28">
+                    {type === "SUCCESS" && (
+                        <FaCheck size="100%" color="#7FBF18" />
+                    )}
+                    {type === "ERROR" && <FcCancel size="100%" />}
+                </div>
 
-                <p className="text-white text-xl md:text-2xl font-bold text-center">
+                <p className="text-center text-lg font-bold text-white break-words sm:text-2xl">
                     {text}
                 </p>
 
                 <button
                     onClick={() => setShow(false)}
-                    className="shadow-[0_0_10px_2px_#e53603] w-1/2 bg-[#e53603] text-[#2e041d] font-bold py-2 px-4 rounded hover:bg-[#e53603]/80 transition-colors"
+                    className="w-full rounded bg-[#e53603] px-4 py-2 font-bold text-[#2e041d] shadow-[0_0_10px_2px_#e53603] transition-colors hover:bg-[#e53603]/80 sm:w-1/2"
                 >
                     Close
                 </button>
 
                 {type === "SUCCESS" && (
-                    <div className="flex flex-col items-center gap-3 mt-2 w-full border-t border-white/10 pt-4">
+                    <div className="mt-1 flex w-full flex-col items-center gap-3 border-t border-white/10 pt-4">
                         {slipCode && (
-                            <div className="w-full flex flex-col items-center gap-1.5">
-                                <p className="text-white/60 text-xs font-medium uppercase tracking-wider">
+                            <div className="flex w-full flex-col items-center gap-1.5">
+                                <p className="text-xs font-medium uppercase tracking-wider text-white/60">
                                     Your slip code
                                 </p>
                                 <button
                                     onClick={copySlip}
                                     aria-label="Copy slip code"
-                                    className="flex items-center justify-between gap-3 w-full bg-[#2E041D] border border-dashed border-[#FFB800]/60 rounded-lg px-4 py-3 hover:bg-[#2E041D]/70 transition-colors"
+                                    className="flex w-full items-center justify-between gap-3 rounded-lg border border-dashed border-[#FFB800]/60 bg-[#2E041D] px-4 py-3 transition-colors hover:bg-[#2E041D]/70"
                                 >
-                                    <span className="text-[#FFB800] font-mono font-bold text-lg tracking-widest break-all text-left">
+                                    <span className="break-all text-left font-mono text-base font-bold tracking-widest text-[#FFB800] sm:text-lg">
                                         {slipCode}
                                     </span>
-                                    <span className="flex items-center gap-1.5 text-xs text-white/70 shrink-0">
+                                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-white/70">
                                         {copied ? (
                                             <>
                                                 <FaCheck color="#7FBF18" />{" "}
@@ -89,18 +101,18 @@ export default function PopUpModal({
                                         )}
                                     </span>
                                 </button>
-                                <p className="text-white/50 text-[11px] text-center">
+                                <p className="text-center text-[11px] text-white/50">
                                     Friends can enter this code to place the
                                     same bet.
                                 </p>
                             </div>
                         )}
 
-                        <p className="text-white/60 text-xs font-medium uppercase tracking-wider">
+                        <p className="text-xs font-medium uppercase tracking-wider text-white/60">
                             Share with friends
                         </p>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center justify-center gap-3">
                             <WhatsappShareButton
                                 url={shareUrl}
                                 message={shareMessage}
@@ -136,6 +148,7 @@ export default function PopUpModal({
                     </div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }

@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { getTimeRemaining } from "./UpcomingMatchTopInfo";
+
 interface Prop {
     id: string;
     status: string;
@@ -6,21 +9,74 @@ interface Prop {
     total: number;
     // true when a leg is currently outside the allowed split
     at_risk?: boolean;
+    // When betting opens / locks for this accumulator. Taken from its first
+    // leg (an accumulator locks when its first leg starts).
+    time: {
+        open_at?: string;
+        close_at?: string;
+    };
+    refetch: () => void;
 }
 
+const pad = (n: number) => n.toString().padStart(2, "0");
+
 // Same layout as UpcomingMatchTopInfo: status badge + id on the left,
-// a small info block on the right (picks progress instead of a countdown).
+// a countdown block on the right (plus picks progress while open).
 export default function UpcomingAccumulatorTopInfo({
     id,
     status,
     picked,
     total,
     at_risk = false,
+    time,
+    refetch,
 }: Prop) {
+    const [left, setLeft] = useState<{ min: number; sec: number } | null>(null);
+
+    // always call the latest refetch without restarting the interval
+    const refetchRef = useRef(refetch);
+    refetchRef.current = refetch;
+
+    // scheduled -> count down to open, open -> count down to lock
+    const target_at =
+        status === "scheduled"
+            ? time.open_at
+            : status === "open"
+              ? time.close_at
+              : undefined;
+
+    useEffect(() => {
+        if (!target_at) {
+            setLeft(null);
+            return;
+        }
+
+        let lastFetch = 0;
+
+        const tick = () => {
+            const { minutes, seconds } = getTimeRemaining(target_at);
+            setLeft({ min: minutes, sec: seconds });
+
+            // at 0:00 refetch, and retry every 3s until the server status changes
+            if (
+                minutes === 0 &&
+                seconds === 0 &&
+                Date.now() - lastFetch > 3000
+            ) {
+                lastFetch = Date.now();
+                refetchRef.current();
+            }
+        };
+
+        tick();
+        const timer = setInterval(tick, 1000);
+        return () => clearInterval(timer);
+    }, [status, target_at]);
+
     return (
         <div>
-            <div className="flex items-center justify-between">
-                <div className="text-[10px] flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
+                <div className="text-[10px] flex min-w-0 items-center gap-2">
                     <div
                         style={{
                             backgroundColor:
@@ -38,17 +94,25 @@ export default function UpcomingAccumulatorTopInfo({
                         </span>
                     )}
                 </div>
-                <div className="text-[10px]">
+                <div className="text-[10px] text-right shrink-0">
                     {status === "scheduled"
-                        ? "Bet not open yet"
+                        ? left
+                            ? "Bet starts in : "
+                            : "Bet not open yet"
                         : status === "open"
-                          ? `Pick all ${total} matches :`
+                          ? "Bet locks in :"
                           : " bet closed "}
 
-                    {status === "open" && (
+                    {left && (status === "scheduled" || status === "open") && (
                         <div className="text-white font-bold">
-                            {picked}/{total}
+                            {pad(left.min)}:{pad(left.sec)}
                         </div>
+                    )}
+
+                    {status === "open" && (
+                        <p className="text-white/70">
+                            Picked {picked}/{total}
+                        </p>
                     )}
                 </div>
             </div>

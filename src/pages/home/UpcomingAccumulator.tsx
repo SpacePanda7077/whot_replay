@@ -1,4 +1,5 @@
-import { Players } from "../../store/replay.store";
+import { useMemo } from "react";
+import { Players, useReplayStore } from "../../store/replay.store";
 import UpcomingAccumulatorTopInfo from "./UpcomingAccumulatorTopInfo";
 import AccumulatorChoices from "./AccumulatorChoices";
 import { useAccumulatorLegs, useGameOdds } from "../../hooks/useOdds";
@@ -25,7 +26,14 @@ interface Prop {
             combo: string[];
         }>
     >;
+    refetch: () => void;
 }
+
+// Earliest valid date in the list (ISO strings), or undefined.
+const earliest = (dates: (string | undefined)[]) =>
+    dates
+        .filter((d): d is string => !!d && Number.isFinite(Date.parse(d)))
+        .sort((a, b) => Date.parse(a) - Date.parse(b))[0];
 
 export default function UpcomingAccumulator({
     id,
@@ -33,7 +41,21 @@ export default function UpcomingAccumulator({
     choosenBet,
     status,
     setChoosenBet,
+    refetch,
 }: Prop) {
+    // An accumulator opens and locks with its first leg, so take the earliest
+    // open / lock time among its legs from the replay store.
+    const replays = useReplayStore((s) => s.replays);
+    const time = useMemo(() => {
+        const games = replays.filter((r) =>
+            legs.some((l) => l.game_id === r.id),
+        );
+        return {
+            open_at: earliest(games.map((g) => g.bets_open_at)),
+            close_at: earliest(games.map((g) => g.bets_lock_at)),
+        };
+    }, [replays, legs]);
+
     // Live data from the odds stream: odds keyed by combo ("OB", ...), and the
     // split of this accumulator's tickets on each leg.
     const odds = useGameOdds(id);
@@ -61,6 +83,8 @@ export default function UpcomingAccumulator({
                 picked={picked}
                 total={ACCUMULATOR_LEGS}
                 at_risk={at_risk}
+                time={time}
+                refetch={refetch}
             />
 
             {legs.map((l, i) => (
@@ -106,4 +130,3 @@ export default function UpcomingAccumulator({
         </div>
     );
 }
-

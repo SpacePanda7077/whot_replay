@@ -61,15 +61,45 @@ export default function OpenBet({ bet: b }: Prop) {
 
     return (
         <div className="flex justify-between items-center bg-[#610240] p-2 rounded-lg">
-            <div className="text-xs flex flex-col">
+            <div className="text-xs flex flex-col text-white">
                 <p>game_id : {odds_id}</p>
                 <div className="flex gap-2 items-center">
-                    {acc ? "combo" : "team"} :{" "}
+                    {acc ? "bets" : "bets"} :{" "}
                     <span
-                        style={{ color: acc ? "" : (b.team ?? "") }}
+                        style={{
+                            color: acc ? "" : (b.player?.full_name ?? ""),
+                        }}
                         className="font-bold"
                     >
-                        {acc ? b.combo : b.team}
+                        {acc && b.combo ? (
+                            <div className="flex items-center gap-2">
+                                {b.legs.map((p, i) => (
+                                    <div
+                                        style={{
+                                            backgroundColor:
+                                                p.player.player_index === 0
+                                                    ? "orange"
+                                                    : "#3B82F6",
+                                        }}
+                                        className="p-1 rounded-lg text-[#2E071B]"
+                                    >
+                                        {p.player.full_name}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    backgroundColor:
+                                        b.player?.player_index === 0
+                                            ? "orange"
+                                            : "#3B82F6",
+                                }}
+                                className="p-1 rounded-lg text-[#2E071B]"
+                            >
+                                {b.player?.full_name ?? ""}
+                            </div>
+                        )}
                     </span>
                     <p>
                         bet_amount:{" ₦ "}
@@ -103,7 +133,6 @@ export default function OpenBet({ bet: b }: Prop) {
                         </span>
                     </p>
                 </div>
-                <ImBin size={24} className="hover:text-white" />
             </div>
         </div>
     );

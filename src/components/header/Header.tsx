@@ -34,7 +34,7 @@ export default function Header() {
                             Whot Africa{" "}
                             <span className="text-[#ffb800]">Replay</span>
                         </h1>
-                        <p className="text-xs text-white/40">Pari Mutual</p>
+                        <p className="text-xs text-white/40">Pari Mutuel</p>
                     </div>
                 </div>
                 <div className="flex gap-6 font-semibold text-sm items-center hidden lg:flex">

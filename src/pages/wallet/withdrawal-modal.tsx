@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PaymentMethodList from "./PaymentMethodList";
 import { useAuth } from "../../store/auth-store";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GetBanks, SetWallet, Withdraw } from "../../api/wallet-api";
 import PopUpModal from "../../components/popup-modal";
 import { useWalletStore } from "../../store/wallet-store";
@@ -12,9 +12,10 @@ interface Prop {
 }
 
 export default function WithdrawalModal({ setOpen, refetch }: Prop) {
+    const queryClient = useQueryClient();
     const [accountName, setAccountName] = useState<string>("");
     const [accountNumber, setAccountNumber] = useState<string>("");
-    const [amount, setAmount] = useState<number>();
+    const [amount, setAmount] = useState("");
     const [bankSelectionOpen, setBankSelectionOpen] = useState(false);
     const [selectedBank, setSelectedBank] = useState<{
         name: string;
@@ -67,6 +68,11 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                 setMsg("Withdrawal SUCCESSFULLY");
                 setStatus("SUCCESS");
                 setShow(true);
+                // Balance changed: refresh it and the transaction list.
+                queryClient.invalidateQueries({
+                    queryKey: ["get_wallet_info"],
+                });
+                queryClient.invalidateQueries({ queryKey: ["getTxQuery"] });
             }
             console.log(data);
         },
@@ -129,10 +135,11 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
 
     const handleWithdraw = useCallback(() => {
         if (isWithdrawing) return; // ignore clicks while a withdrawal is in flight
-        if (!logs || !amount || amount <= 0) return;
+
+        if (!logs || !amount || Number(amount) <= 0) return;
         withdraw({
             token: logs.token,
-            data: { amount: amount },
+            data: { amount: Number(amount) },
         });
     }, [logs, amount, withdraw, isWithdrawing]);
 
@@ -247,9 +254,7 @@ export default function WithdrawalModal({ setOpen, refetch }: Prop) {
                                 type="text"
                                 placeholder="Enter Amount"
                                 value={amount ?? ""}
-                                onChange={(e) =>
-                                    setAmount(Number(e.target.value))
-                                }
+                                onChange={(e) => setAmount(e.target.value)}
                                 className="bg-white/5 w-full p-2 rounded text-white font-bold placeholder:text-white/40"
                             />
                         </div>

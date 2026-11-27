@@ -102,6 +102,7 @@ export default function Matches() {
                                                 id={m.id}
                                                 legs={m.legs}
                                                 status={m.status}
+                                                refetch={refetch}
                                                 choosenBet={
                                                     choosenAccumulatorBet
                                                 }
@@ -155,4 +156,3 @@ export default function Matches() {
         </>
     );
 }
-

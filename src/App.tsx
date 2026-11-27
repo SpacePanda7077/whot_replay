@@ -131,6 +131,10 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                     <Route path="/my-stakes" element={<MyStakes />} />
                     <Route path="/wallet" element={<Wallet />} />
+                    <Route
+                        path="/deposit"
+                        element={<Wallet isDepositing={true} />}
+                    />
                 </Route>
 
                 <Route path="/whot-africa" element={<WhotAfrica />} />

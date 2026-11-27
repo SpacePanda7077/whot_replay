@@ -8,7 +8,11 @@ import { useAuth } from "../../store/auth-store";
 import { useEffect } from "react";
 import { useWalletStore } from "../../store/wallet-store";
 
-export default function Wallet() {
+interface prop {
+    isDepositing?: boolean;
+}
+
+export default function Wallet({ isDepositing }: prop) {
     const logs = useAuth((s) => s.login_result);
     const setwallet = useWalletStore((s) => s.setWallet);
     const {
@@ -34,11 +38,13 @@ export default function Wallet() {
         <>
             <Header />
             <div className="flex flex-col gap-4 items-center justify-center mt-30 text-white/70 ">
-                <WalletDashboard refetch={refetch} />
+                <WalletDashboard
+                    refetch={refetch}
+                    isDepositing={isDepositing}
+                />
 
                 <TransactionHistory />
             </div>
         </>
     );
 }
-

@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DepositModal from "./deposit-modal";
 import WithdrawalModal from "./withdrawal-modal";
 
 interface Prop {
     refetch: () => void;
+    isDepositing?: boolean;
 }
 
-export default function DepositDashboard({ refetch }: Prop) {
+export default function DepositDashboard({ refetch, isDepositing }: Prop) {
     const [depositOpen, setDepositOpen] = useState(false);
     const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+    useEffect(() => {
+        if (isDepositing) {
+            setDepositOpen(true);
+        }
+    }, [isDepositing]);
     return (
         <>
             <div className="mt-6">
@@ -38,4 +44,3 @@ export default function DepositDashboard({ refetch }: Prop) {
         </>
     );
 }
-

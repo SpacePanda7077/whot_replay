@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../store/auth-store";
 import { DepositStatus } from "../api/wallet-api";
 
@@ -9,6 +10,7 @@ const POLL_INTERVAL_MS = 3000;
 
 export const useFetchTxStatus = () => {
     const logs = useAuth((s) => s.login_result);
+    const queryClient = useQueryClient();
     const [depositReference, setDepositReference] = useState<string | null>(
         null,
     );
@@ -65,11 +67,17 @@ export const useFetchTxStatus = () => {
                 console.log("Deposit status:", response.status);
 
                 if (response.status === "success") {
+                    // Money landed: refresh the balance and the transaction list.
+                    queryClient.invalidateQueries({
+                        queryKey: ["get_wallet_info"],
+                    });
+                    queryClient.invalidateQueries({ queryKey: ["getTxQuery"] });
                     finish("DEPOSIT SUCCESSFUL", "SUCCESS");
                     return;
                 }
 
                 if (response.status === "failed") {
+                    queryClient.invalidateQueries({ queryKey: ["getTxQuery"] });
                     finish("DEPOSIT FAILED", "ERROR");
                     return;
                 }
@@ -108,7 +116,7 @@ export const useFetchTxStatus = () => {
             clearInterval(interval);
             clearInterval(tick);
         };
-    }, [depositReference, logs?.token]);
+    }, [depositReference, logs?.token, queryClient]);
 
     return {
         depositReference,
